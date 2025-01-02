@@ -1,0 +1,46 @@
+{
+  "name": "commit_ninja",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Dilly3/commit-ninja#readme",
+  "bugs": {
+    "url": "https://github.com/Dilly3/commit-ninja/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dilly3/commit-ninja.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --ext .js,.ts .",
+    "dev": "nodemon",
+    "start": "node dist/index.js",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.3",
+    "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}
