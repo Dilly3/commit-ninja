@@ -8,8 +8,15 @@ class Config {
     public dbHost = process.env.DB_HOST ?? "postgres",
     public dbUser = process.env.DB_USER ?? "postgres",
     public dbPassword = process.env.DB_PASSWORD ?? "postgres",
-    public dbName = process.env.DB_NAME ?? "commit_ninja"
+    public dbName = process.env.DB_NAME ?? "commit_ninja",
+    public githubBaseUrl = process.env.GITHUB_BASE_URL ?? "",
+    public githubToken = process.env.GITHUB_TOKEN ?? "",
+    public githubOwner = process.env.OWNER ?? "",
+    public githubRepo = process.env.REPO ?? "",
+    public startDate = process.env.START_DATE ?? ""
+
   ){}
+
 }
 
 export const config = new Config()
