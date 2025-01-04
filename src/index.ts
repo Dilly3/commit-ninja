@@ -1,23 +1,34 @@
-console.log('hello world')
-import dotenv from "dotenv"
-import { GithubClient } from "./github/github_client";
-import { CommitInfo } from "./github/models";
 
-dotenv.config()
+import express, { Express, Request, Response } from "express";
+import { AppDataSource } from "./db/database";
+import {config} from "./config/config"
 
-const ghClient = new GithubClient()
-ghClient.getRepo("2024-01-01",5,2)
-.then(commits => {commits.map(commit => {
-    const commitInfo : CommitInfo = {
-        id : commit.sha,
-        repoName :  ghClient.repo, 
-        message  :   commit.commit.message,
-        authorName :  commit.committer.login,
-        authorEmail : commit.commit.author.email,
-        date   :    commit.commit.author.date,
-        url  :       commit.commit.url.split('/git/')[0]
-    }
-    console.log(commitInfo)
+import bodyParser from "body-parser";
+import Cors from 'cors'
 
-})}).catch(error => console.error(error));
+
+const app: Express = express();
+
+app.use(bodyParser.json())
+
+app.use(Cors())
+
+app.get('/', (req:Request, res : Response) => {
+  console.log(req.body())
+  res.status(200).json({message:'hello World'})
+
+})
+
+AppDataSource.initialize().then(()=> {
+  console.log('connected to db')
+  app.listen(config.port, ()=> {
+  console.log(`listening on port: ${config.port}`)
+})
+}).catch((err : Error) => {
+  console.log('error connecting to db', err.message,err)
+})
+
+
+
+
    
