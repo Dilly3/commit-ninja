@@ -11,4 +11,21 @@ export class RepoRepository {
       },
     });
   }
+
+  async getReposWithMostStars(limit: number = 1): Promise<Array<MaxStars>> {
+    const query = this.RepoReposit.createQueryBuilder("repo")
+      .select(["repo.name", "repo.url", "repo.stars"])
+      .orderBy("repo.stars", "DESC");
+
+    if (limit) {
+      query.limit(limit);
+    }
+
+    const repos = await query.getMany();
+    return repos.map((repo) => ({
+      name: repo.name,
+      url: repo.url,
+      stars: repo.stars,
+    }));
+  }
 }
