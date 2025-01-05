@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity()
+@Entity({name:'commits'})
 export class CommitInfo {
   @PrimaryColumn()
   id: string;
