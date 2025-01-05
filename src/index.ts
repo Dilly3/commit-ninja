@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
-import { AppDataSource } from "./db/database";
-import { config } from "./config/config";
+import { AppDataSource } from "./internal/db/database";
+import { config } from "./internal/config/config";
 
 import bodyParser from "body-parser";
 import Cors from "cors";
