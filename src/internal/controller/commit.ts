@@ -1,7 +1,7 @@
 import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitRepository } from "../repository/commit";
 
-export class CommitConstructor {
+export class CommitController {
   constructor(public commitRepo = new CommitRepository()) {}
 
   async saveCommits(commits: CommitInfo[]) {

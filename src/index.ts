@@ -7,7 +7,7 @@ import Cors from "cors";
 import { GithubCommit } from "./github/commit_service";
 import { CommitInfo } from "./internal/db/entities/commit_entity";
 import { ApiError } from "./internal/error/app_error";
-import { CommitConstructor } from "./internal/constructor/commit";
+import { CommitController } from "./internal/controller/commit";
 
 const app: Express = express();
 
@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(Cors());
 
 app.get("/", async (req: Request, res: Response) => {
-  const construc = new CommitConstructor();
+  const construc = new CommitController();
   const commitIns = new GithubCommit(
     config.githubBaseUrl,
     config.githubOwner,
@@ -56,7 +56,7 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.get("/count", async (_: Request, res: Response) => {
-  const construc = new CommitConstructor();
+  const construc = new CommitController();
   try {
     const autCount = await construc.getAuthoursCommitCount();
     res.status(200).json({ autCount });
