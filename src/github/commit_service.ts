@@ -9,7 +9,8 @@ export class GithubCommit extends BaseGithub {
     owner: string,
     repo: string,
     token: string,
-    private startDate: string
+    private startDate: string,
+    private pageSize: number,
   ) {
     super(baseUrl, owner, repo, token);
   }
@@ -17,9 +18,8 @@ export class GithubCommit extends BaseGithub {
   async getCommits(
     page: number = 1,
     since: string = this.startDate,
-    perPage: number = 20
   ): Promise<CommitResponse[]> {
-    const url = this.parseCommitUrl(since, perPage, page);
+    const url = this.parseCommitUrl(since, page);
     const headers = this.getDefaultHeaders();
 
     try {
@@ -47,7 +47,7 @@ export class GithubCommit extends BaseGithub {
     };
   }
 
-  private parseCommitUrl(since: string, perPage: number, page: number): string {
-    return `${this.baseUrl}/repos/${this.owner}/${this.repo}/commits?since=${since}&per_page=${perPage}&page=${page}`;
+  private parseCommitUrl(since: string, page: number): string {
+    return `${this.baseUrl}/repos/${this.owner}/${this.repo}/commits?since=${since}&per_page=${this.pageSize}&page=${page}`;
   }
-} 
+}
