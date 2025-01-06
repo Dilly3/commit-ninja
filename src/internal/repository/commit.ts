@@ -1,6 +1,7 @@
-import { AppDataSource } from "src/internal/db/database";
-import { CommitInfo } from "src/internal/db/entities/commit_entity";
+import { AppDataSource } from "../db/database";
+import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitSumm } from "../db/entities/commit_summ";
+import { BuildPaginator, Order } from "../paginator/paginator";
 
 export class CommitRepository {
   public constructor(
@@ -40,16 +41,23 @@ export class CommitRepository {
     return savedCommits;
   }
 
-  async getCommits(limit?: number): Promise<CommitInfo[]> {
+  async getCommits(limit?: number) {
     const query = this.commitReposit
-      .createQueryBuilder("commit")
-      .orderBy("commit.timestamp", "DESC");
+      .createQueryBuilder("commitinfo")
+      .orderBy("commitinfo.date", "DESC");
 
     if (limit) {
       query.take(limit);
     }
 
-    return await query.getMany();
+    const paginator = BuildPaginator(CommitInfo, Order.DESC, limit ?? 10);
+
+    const { data, cursor: newCursor } = await paginator.paginate(query);
+    const page = {
+      data,
+      cursor: newCursor,
+    };
+    return page;
   }
 
   async getCommitsByAuthor(
@@ -85,8 +93,8 @@ export class CommitRepository {
   }
 
   async getCommitCountsByAuthor(
-    startDate?: Date,
-    endDate?: Date,
+    startDate?: string,
+    endDate?: string,
   ): Promise<Array<CommitSumm>> {
     const query = this.commitReposit
       .createQueryBuilder("commit")
@@ -95,14 +103,17 @@ export class CommitRepository {
       .addSelect("COUNT(*)", "commit_count");
 
     if (startDate) {
-      query.andWhere("commit.timestamp >= :startDate", { startDate });
+      const sd = new Date(startDate).toISOString();
+      query.andWhere("commit.date >= :startDate", { sd });
     }
     if (endDate) {
-      query.andWhere("commit.timestamp <= :endDate", { endDate });
+      const ed = new Date(endDate).toISOString();
+      query.andWhere("commit.date <= :endDate", { ed });
     }
 
     return await query
       .groupBy("commit.author_email")
+      .addGroupBy("commit.author_name")
       .orderBy("commit_count", "DESC")
       .getRawMany();
   }
