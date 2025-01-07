@@ -1,13 +1,12 @@
 import express, { Express, Request, Response } from "express";
-import { AppDataSource } from "./internal/db/database";
+import { AppDataSource } from "./internal/repository/pg_database";
 import { config } from "./internal/config/config";
 
 import bodyParser from "body-parser";
 import Cors from "cors";
-import { GithubCommit } from "./github/commit_service";
-import { CommitInfo } from "./internal/db/entities/commit_entity";
 import { ApiError } from "./internal/error/app_error";
 import { CommitController } from "./internal/controller/commit";
+import { ScheduleJob } from "./internal/cron/cron";
 
 const app: Express = express();
 
@@ -15,50 +14,34 @@ app.use(bodyParser.json());
 
 app.use(Cors());
 
-app.get("/", async (req: Request, res: Response) => {
-  const construc = new CommitController();
-  const commitIns = new GithubCommit(
-    config.githubBaseUrl,
-    config.githubOwner,
-    config.githubRepo,
-    config.githubToken,
-    config.startDate,
-    config.githubPageSize,
-  );
+const JsonResponse = (res: Response, code: number, data: any) => {
+  res.status(code).json(data);
+};
+
+const ctrl = new CommitController(
+  config.githubBaseUrl,
+  config.githubOwner,
+  config.githubRepo,
+  config.githubToken,
+  config.startDate,
+  config.githubPageSize,
+);
+
+// run cron job
+ScheduleJob(ctrl.fetchAndSaveCommits, "*/10 * * * *", true);
+
+app.get("/", async (_: Request, res: Response) => {
   try {
-    let page = 1;
-    let allCommits: CommitInfo[] = [];
-
-    while (true) {
-      const commits = await commitIns.getCommits(page);
-      if (!commits || commits.length === 0) {
-        break;
-      }
-      const comms = commits.map((commit) =>
-        commitIns.getCommitInstance(commit),
-      );
-      allCommits = [...allCommits, ...comms];
-      page++;
-    }
-
-    console.log(req.body);
-    const dbResults = await construc.saveCommits(allCommits);
-    const commitsfromdb = await construc.getCommits();
-
-    res.status(200).json({
-      count: dbResults.length,
-      commits: commitsfromdb,
-    });
+    const commits = await ctrl.fetchAndSaveCommits();
+    JsonResponse(res, 200, { commits });
   } catch (error) {
-    console.error("Error fetching commits:", error);
-    res.status(500).send("Error fetching commits");
+    JsonResponse(res, 500, { error });
   }
 });
 
 app.get("/count", async (_: Request, res: Response) => {
-  const construc = new CommitController();
   try {
-    const autCount = await construc.getAuthoursCommitCount();
+    const autCount = await ctrl.getAuthoursCommitCount();
     res.status(200).json({ autCount });
   } catch (error) {
     if (error instanceof Error) {
