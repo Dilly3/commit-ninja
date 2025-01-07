@@ -54,7 +54,7 @@ export class CommitController {
       while (true) {
         const commits = await this.commitClient.getCommits(
           page,
-          lastCommitDate ?? undefined,
+          lastCommitDate || undefined,
         );
         if (!commits || commits.length === 0) {
           break;

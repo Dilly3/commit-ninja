@@ -17,9 +17,9 @@ export class GithubCommit extends BaseGithub {
 
   async getCommits(
     page: number = 1,
-    since: string = this.startDate,
+    since?: string,
   ): Promise<CommitResponse[]> {
-    const url = this.parseCommitUrl(since, page);
+    const url = this.parseCommitUrl(since || this.startDate, page);
     const headers = this.getDefaultHeaders();
 
     try {
