@@ -10,16 +10,8 @@ RUN npm install -g nodemon
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies in one RUN command to reduce layers
-RUN npm install \
-    cors @types/cors \
-    express @types/express \
-    class-transformer \
-    typeorm-cursor-pagination \
-    node-cron \
-    chalk \
-    && npm install 
-    
+# Install dependencies
+RUN npm ci
 
 # Copy app source code
 COPY . .
