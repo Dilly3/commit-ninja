@@ -48,6 +48,7 @@ export class CommitController {
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
     try {
       const lastCommitDate = await this.getLastCommitDate();
+      console.log("Last commit date:", lastCommitDate);
       let page = 1;
       let allCommits: CommitInfo[] = [];
 
