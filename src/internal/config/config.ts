@@ -7,6 +7,7 @@ enum configDefaults {
   DefaultPostgresHost = "localhost",
   DefaultPostgresPassword = "postgres",
   DefaultAppPort = "7020",
+  DefaultTimeZone = "Africa/Lagos"
 }
 dotenv.config();
 class Config {
@@ -28,6 +29,7 @@ class Config {
       ? parseInt(process.env.PAGE_SIZE)
       : configDefaults.DefaultPageSize,
     public startDate = process.env.GITHUB_START_DATE ?? "",
+    public TZ = process.env.TZ ?? configDefaults.DefaultTimeZone
   ) {}
 }
 
