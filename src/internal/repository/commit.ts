@@ -2,6 +2,7 @@ import { AppDataSource } from "./pg_database";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitSumm } from "../db/entities/commit_summ";
 import { BuildPaginator, Order } from "../paginator/paginator";
+import chalk from "chalk";
 
 export class CommitRepository {
   public constructor(
@@ -119,13 +120,30 @@ export class CommitRepository {
   }
 
   async getDateOfLastCommit(): Promise<string | null> {
-    const mostRecentCommit = await this.commitReposit
-      .createQueryBuilder("commit")
-      .select("commit.date")
-      .orderBy("commit.date", "DESC")
-      .limit(1)
-      .getOne();
+    try {
+      const mostRecentCommit = await this.commitReposit
+        .createQueryBuilder("commit")
+        .select("commit.date")
+        .orderBy("commit.date", "DESC")
+        .limit(1)
+        .getOne();
 
-    return mostRecentCommit ? mostRecentCommit.date : null;
+      console.log(chalk.blue("Most recent commit found:", mostRecentCommit)); // Debug log
+
+      if (!mostRecentCommit) {
+        console.log(chalk.red("No commits found in database")); // Debug log
+        return null;
+      }
+
+      if (!mostRecentCommit.date) {
+        console.log(chalk.red("Most recent commit has no date")); // Debug log
+        return null;
+      }
+
+      return mostRecentCommit.date;
+    } catch (error) {
+      console.error("Error fetching last commit date:", error); // Error log
+      throw error;
+    }
   }
 }
