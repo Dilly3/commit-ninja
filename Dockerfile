@@ -17,7 +17,9 @@ RUN npm install \
     class-transformer \
     typeorm-cursor-pagination \
     node-cron \
-    && npm install
+    chalk \
+    && npm install 
+    
 
 # Copy app source code
 COPY . .
