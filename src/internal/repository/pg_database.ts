@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
-import { CommitInfo } from "./entities/commit_entity";
-import { RepoInfo } from "./entities/repo_entity";
+import { CommitInfo } from "../db/entities/commit_entity";
+import { RepoInfo } from "../db/entities/repo_entity";
 import { config } from "../config/config";
 
 export const AppDataSource = new DataSource({

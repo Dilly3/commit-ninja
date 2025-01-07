@@ -1,5 +1,5 @@
 import { MaxStars, RepoInfo } from "./../db/entities/repo_entity";
-import { AppDataSource } from "../db/database";
+import { AppDataSource } from "./pg_database";
 
 export class RepoRepository {
   constructor(public RepoReposit = AppDataSource.getRepository(RepoInfo)) {}

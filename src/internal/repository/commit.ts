@@ -1,4 +1,4 @@
-import { AppDataSource } from "../db/database";
+import { AppDataSource } from "./pg_database";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitSumm } from "../db/entities/commit_summ";
 import { BuildPaginator, Order } from "../paginator/paginator";
