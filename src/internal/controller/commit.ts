@@ -2,6 +2,9 @@ import { GithubCommit } from "../../github/commit_service";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitRepository } from "../repository/commit";
 
+enum constants {
+  BATCHSIZE = 25,
+}
 export class CommitController {
   constructor(
     baseurl: string,
@@ -46,36 +49,57 @@ export class CommitController {
   }
 
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
+    const startTime = performance.now();
     try {
       const lastCommitDate = await this.getLastCommitDate();
       console.log("Last commit date:", lastCommitDate);
       let page = 1;
       let allCommits: CommitInfo[] = [];
 
+      // Process commits in batches
+      const BATCH_SIZE = constants.BATCHSIZE;
+      let batchCommits: CommitInfo[] = [];
+
       while (true) {
         const commits = await this.commitClient.getCommits(
           page,
           lastCommitDate || undefined,
         );
-        if (!commits || commits.length === 0) {
-          break;
-        }
+        if (!commits || commits.length === 0) break;
+
+        // Process commits in parallel but with controlled concurrency
         const commitInfos = await Promise.all(
           commits.map((commit) => this.commitClient.getCommitInstance(commit)),
         );
-        allCommits = [...allCommits, ...commitInfos];
+
+        batchCommits.push(...commitInfos);
+
+        // Save to DB when batch size is reached
+        if (batchCommits.length >= BATCH_SIZE) {
+          await this.saveCommits(batchCommits);
+          allCommits.push(...batchCommits);
+          batchCommits = [];
+        }
+
         page++;
       }
-      const dbResults = await this.saveCommits(allCommits);
+
+      // Save any remaining commits
+      if (batchCommits.length > 0) {
+        await this.saveCommits(batchCommits);
+        allCommits.push(...batchCommits);
+      }
+
+      const executionTime = (performance.now() - startTime) / 1000;
       console.log(
-        `Scheduled job completed: ${dbResults.length} commits processed`,
+        `!!! Scheduled job completed: ${allCommits.length} commits processed in ${executionTime.toFixed(2)} seconds`,
       );
-      return dbResults;
+      return allCommits;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(error.message);
       }
-      throw new Error(`unkwown error ${error}`);
+      throw new Error(`unknown error ${error}`);
     }
   }
 }

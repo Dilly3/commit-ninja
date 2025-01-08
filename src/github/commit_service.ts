@@ -18,8 +18,13 @@ export class GithubCommit extends BaseGithub {
   async getCommits(
     page: number = 1,
     since?: string,
+    repo?: string,
   ): Promise<CommitResponse[]> {
-    const url = this.parseCommitUrl(since || this.startDate, page);
+    const url = this.parseCommitUrl(
+      since || this.startDate,
+      page,
+      repo || this.repo,
+    );
     const headers = this.getDefaultHeaders();
 
     try {
@@ -47,7 +52,7 @@ export class GithubCommit extends BaseGithub {
     };
   }
 
-  private parseCommitUrl(since: string, page: number): string {
-    return `${this.baseUrl}/repos/${this.owner}/${this.repo}/commits?since=${since}&per_page=${this.pageSize}&page=${page}`;
+  private parseCommitUrl(since: string, page: number, repo?: string): string {
+    return `${this.baseUrl}/repos/${this.owner}/${repo}/commits?since=${since}&per_page=${this.pageSize}&page=${page}`;
   }
 }
