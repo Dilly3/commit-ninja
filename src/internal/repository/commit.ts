@@ -119,14 +119,20 @@ export class CommitRepository {
       .getRawMany();
   }
 
-  async getDateOfLastCommit(): Promise<string | null> {
+  async getDateOfLastCommit(repoName?: string): Promise<string | null> {
     try {
-      const mostRecentCommit = await this.commitReposit
+      const query = this.commitReposit
         .createQueryBuilder("commit")
         .select("commit.date")
         .orderBy("commit.date", "DESC")
-        .limit(1)
-        .getOne();
+        .limit(1);
+
+      // Add repo name filter if provided
+      if (repoName) {
+        query.where("commit.repo_name = :repoName", { repoName });
+      }
+
+      const mostRecentCommit = await query.getOne();
 
       console.log(chalk.blue("Most recent commit found:", mostRecentCommit)); // Debug log
 
