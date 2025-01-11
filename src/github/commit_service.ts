@@ -19,13 +19,15 @@ export class GithubCommit extends BaseGithub {
     page: number = 1,
     since?: string,
     repo?: string,
+    owner?: string,
   ): Promise<CommitResponse[]> {
     const url = this.parseCommitUrl(
       since || this.startDate,
       page,
       repo || this.repo,
+      owner || this.owner,
     );
-    const headers = this.getDefaultHeaders();
+    const headers = this.getDefaultHeaders(this.token);
 
     try {
       const response = await this.makeRequest(url, headers);
@@ -39,11 +41,11 @@ export class GithubCommit extends BaseGithub {
     }
   }
 
-  getCommitInstance(repoCommit: CommitResponse): CommitInfo {
+  getCommitInstance(repoCommit: CommitResponse, repoName?: string): CommitInfo {
     const commit = plainToInstance(CommitResponse, repoCommit);
     return {
       id: commit.sha,
-      repoName: this.repo,
+      repoName: repoName|| this.repo,
       message: commit.commit.message,
       authorName: commit.committer.login,
       authorEmail: commit.commit.author.email,
@@ -52,7 +54,12 @@ export class GithubCommit extends BaseGithub {
     };
   }
 
-  private parseCommitUrl(since: string, page: number, repo?: string): string {
-    return `${this.baseUrl}/repos/${this.owner}/${repo}/commits?since=${since}&per_page=${this.pageSize}&page=${page}`;
+  private parseCommitUrl(
+    since: string,
+    page: number,
+    repo?: string,
+    owner?: string,
+  ): string {
+    return `${this.baseUrl}/repos/${owner}/${repo}/commits?since=${since}&per_page=${this.pageSize}&page=${page}`;
   }
 }
