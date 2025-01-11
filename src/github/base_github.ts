@@ -18,12 +18,13 @@ export abstract class BaseGithub {
     return response;
   }
 
-  protected getDefaultHeaders(): Headers {
+  protected getDefaultHeaders(token : string): Headers {
+
     return new Headers({
       "Content-Type": "application/json",
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
-      Authorization: `Bearer ${this.token}`,
+      Authorization: `Bearer ${token}`,
     });
   }
 } 

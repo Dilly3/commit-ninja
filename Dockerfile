@@ -12,6 +12,8 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
+RUN npm install ioredis @types/ioredis
+RUN npm install redis @types/redis
 
 # Copy app source code
 COPY . .

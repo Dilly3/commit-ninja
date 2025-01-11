@@ -1,11 +1,16 @@
 import { GithubCommit } from "../../github/commit_service";
 import { CommitInfo } from "../db/entities/commit_entity";
+import { AppSettings } from "../redis/redis";
 import { CommitRepository } from "../repository/commit";
+import { config } from "../../internal/config/config";
 
 enum constants {
   BATCHSIZE = 25,
 }
 export class CommitController {
+  commitRepo: CommitRepository;
+  commitClient: GithubCommit;
+  redisInstance: AppSettings;
   constructor(
     baseurl: string,
     owner: string,
@@ -13,18 +18,16 @@ export class CommitController {
     token: string,
     startdate: string,
     pagesize: number,
-
-    private commitRepo = new CommitRepository(),
-
-    public commitClient = new GithubCommit(
-      baseurl,
-      owner,
-      repo,
-      token,
-      startdate,
-      pagesize,
-    ),
-  ) {}
+    commitRepo?: CommitRepository,
+    redisInstance?: AppSettings,
+    commitClient?: GithubCommit,
+  ) {
+    this.commitRepo = commitRepo || new CommitRepository();
+    this.redisInstance = redisInstance || new AppSettings();
+    this.commitClient =
+      commitClient ||
+      new GithubCommit(baseurl, owner, repo, token, startdate, pagesize);
+  }
 
   async saveCommits(commits: CommitInfo[]) {
     return await this.commitRepo.saveCommits(commits);
@@ -44,14 +47,19 @@ export class CommitController {
     return this.commitRepo.getCommitCountsByAuthor(startDate, endDate);
   }
 
-  async getLastCommitDate() {
-    return this.commitRepo.getDateOfLastCommit();
+  async getLastCommitDate(repoName?: string) {
+    return this.commitRepo.getDateOfLastCommit(repoName);
   }
 
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
     const startTime = performance.now();
+
+    const appSetting = await this.redisInstance.getAppSettings(config);
+    console.log("APP-SETTING", appSetting);
     try {
-      const lastCommitDate = await this.getLastCommitDate();
+      const lastCommitDate = await this.getLastCommitDate(
+        appSetting.Repo ?? config.githubRepo,
+      );
       console.log("Last commit date:", lastCommitDate);
       let page = 1;
       let allCommits: CommitInfo[] = [];
@@ -63,13 +71,17 @@ export class CommitController {
       while (true) {
         const commits = await this.commitClient.getCommits(
           page,
-          lastCommitDate || undefined,
+          lastCommitDate || appSetting.StartDate || undefined,
+          appSetting.Repo || undefined,
+          appSetting.Owner || undefined,
         );
         if (!commits || commits.length === 0) break;
 
         // Process commits in parallel but with controlled concurrency
         const commitInfos = await Promise.all(
-          commits.map((commit) => this.commitClient.getCommitInstance(commit)),
+          commits.map((commit) =>
+            this.commitClient.getCommitInstance(commit, appSetting.Repo),
+          ),
         );
 
         batchCommits.push(...commitInfos);
@@ -101,5 +113,13 @@ export class CommitController {
       }
       throw new Error(`unknown error ${error}`);
     }
+  }
+
+  async setSetting(
+    repo: string,
+    startDate: string,
+    owner: string,
+  ): Promise<boolean> {
+    return await this.redisInstance.InitAppSettings(repo, startDate, owner);
   }
 }
