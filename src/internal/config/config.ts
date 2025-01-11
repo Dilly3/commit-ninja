@@ -7,10 +7,11 @@ enum configDefaults {
   DefaultPostgresHost = "localhost",
   DefaultPostgresPassword = "postgres",
   DefaultAppPort = "7020",
-  DefaultTimeZone = "Africa/Lagos"
+  DefaultRedisPort = 6379,
+  DefaultTimeZone = "Africa/Lagos",
 }
 dotenv.config();
-class Config {
+export class Config {
   constructor(
     public port = process.env.PORT ?? configDefaults.DefaultAppPort,
     public dbPort = parseInt(
@@ -28,8 +29,13 @@ class Config {
     public githubPageSize = process.env.PAGE_SIZE
       ? parseInt(process.env.PAGE_SIZE)
       : configDefaults.DefaultPageSize,
+    public redisHost = process.env.REDIS_HOST ?? "localhost",
+    public redisPort = process.env.REDIS_PORT
+      ? parseInt(process.env.REDIS_PORT)
+      : configDefaults.DefaultRedisPort,
+
     public startDate = process.env.GITHUB_START_DATE ?? "",
-    public TZ = process.env.TZ ?? configDefaults.DefaultTimeZone
+    public TZ = process.env.TZ ?? configDefaults.DefaultTimeZone,
   ) {}
 }
 
