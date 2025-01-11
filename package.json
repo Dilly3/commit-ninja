@@ -28,8 +28,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "ioredis": "^5.4.2",
     "node-cron": "^3.0.3",
     "pg": "^8.13.1",
+    "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.20",
     "typeorm-cursor-pagination": "^0.10.1"
@@ -37,7 +39,9 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/express": "^5.0.0",
+    "@types/ioredis": "^4.28.10",
     "@types/node": "^22.10.3",
+    "@types/redis": "^4.0.10",
     "chalk": "^4.1.2",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
