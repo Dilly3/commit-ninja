@@ -40,12 +40,17 @@ export class GithubCommit extends BaseGithub {
         : new Error("Failed to fetch commits");
     }
   }
-
+  /**
+   * Converts a raw GitHub commit response into a normalized CommitInfo object
+   * @param repoCommit - The raw commit response from GitHub's API
+   * @param repoName - Optional repository name override. If not provided, uses the instance's repo name
+   * @returns {CommitInfo} A normalized commit information object containing essential commit details
+   */
   getCommitInstance(repoCommit: CommitResponse, repoName?: string): CommitInfo {
     const commit = plainToInstance(CommitResponse, repoCommit);
     return {
       id: commit.sha,
-      repoName: repoName|| this.repo,
+      repoName: repoName || this.repo,
       message: commit.commit.message,
       authorName: commit.committer.login,
       authorEmail: commit.commit.author.email,
