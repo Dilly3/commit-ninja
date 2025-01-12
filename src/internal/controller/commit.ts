@@ -51,42 +51,65 @@ export class CommitController {
     return this.commitRepo.getDateOfLastCommit(repoName);
   }
 
+  /**
+   * Fetches commits from GitHub and saves them to the database in batches
+   *
+   * This function performs the following operations:
+   * 1. Retrieves application settings from Redis
+   * 2. Gets the date of the last saved commit to avoid duplicate fetching
+   * 3. Iteratively fetches commits from GitHub API, processing them in batches
+   * 4. Saves the commits to the database while maintaining memory efficiency
+   *
+   * @returns Promise<CommitInfo[]> Array of all processed commits
+   * @throws Error if any operation fails during the process
+   */
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
+    // Track execution time for performance monitoring
     const startTime = performance.now();
 
+    // Get application settings from Redis (includes repo, owner, start date)
     const appSetting = await this.redisInstance.getAppSettings(config);
     console.log("APP-SETTING", appSetting);
     try {
+      // Get the most recent commit date to avoid fetching duplicate commits
+      // Falls back to config.githubRepo(set in env) if appSetting.Repo(set in redis) is not available
       const lastCommitDate = await this.getLastCommitDate(
         appSetting.Repo ?? config.githubRepo,
       );
       console.log("Last commit date:", lastCommitDate);
+
       let page = 1;
       let allCommits: CommitInfo[] = [];
 
-      // Process commits in batches
-      const BATCH_SIZE = constants.BATCHSIZE;
+      // Set up batch processing to optimize memory usage and database operations
+      const BATCH_SIZE = constants.BATCHSIZE; // Default is 25
       let batchCommits: CommitInfo[] = [];
 
+      // Continue fetching commits until no more are available
       while (true) {
+        // Fetch a page of commits from GitHub
+        // Uses lastCommitDate from the database or StartDate as the starting point
         const commits = await this.commitClient.getCommits(
           page,
           lastCommitDate || appSetting.StartDate || undefined,
           appSetting.Repo || undefined,
           appSetting.Owner || undefined,
         );
+        // Exit loop if no more commits are found
         if (!commits || commits.length === 0) break;
 
-        // Process commits in parallel but with controlled concurrency
+        // Convert raw commit data to CommitInfo instances
+        // Uses Promise.all for parallel processing of commit data
         const commitInfos = await Promise.all(
           commits.map((commit) =>
             this.commitClient.getCommitInstance(commit, appSetting.Repo),
           ),
         );
 
+        // Add processed commits to the current batch
         batchCommits.push(...commitInfos);
 
-        // Save to DB when batch size is reached
+        // When batch size is reached, save to database and reset batch
         if (batchCommits.length >= BATCH_SIZE) {
           await this.saveCommits(batchCommits);
           allCommits.push(...batchCommits);
@@ -96,18 +119,20 @@ export class CommitController {
         page++;
       }
 
-      // Save any remaining commits
+      // Handle any remaining commits that didn't fill a complete batch
       if (batchCommits.length > 0) {
         await this.saveCommits(batchCommits);
         allCommits.push(...batchCommits);
       }
 
+      // Calculate and log execution metrics
       const executionTime = (performance.now() - startTime) / 1000;
       console.log(
         `!!! Scheduled job completed: ${allCommits.length} commits processed in ${executionTime.toFixed(2)} seconds`,
       );
       return allCommits;
     } catch (error) {
+      // Error handling with type checking
       if (error instanceof Error) {
         throw new Error(error.message);
       }
@@ -123,3 +148,12 @@ export class CommitController {
     return await this.redisInstance.InitAppSettings(repo, startDate, owner);
   }
 }
+
+export const ctrl = new CommitController(
+  config.githubBaseUrl,
+  config.githubOwner,
+  config.githubRepo,
+  config.githubToken,
+  config.startDate,
+  config.githubPageSize,
+);
