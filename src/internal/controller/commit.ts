@@ -8,26 +8,11 @@ enum constants {
   BATCHSIZE = 25,
 }
 export class CommitController {
-  commitRepo: CommitRepository;
-  commitClient: GithubCommit;
-  redisInstance: AppSettings;
   constructor(
-    baseurl: string,
-    owner: string,
-    repo: string,
-    token: string,
-    startdate: string,
-    pagesize: number,
-    commitRepo?: CommitRepository,
-    redisInstance?: AppSettings,
-    commitClient?: GithubCommit,
-  ) {
-    this.commitRepo = commitRepo || new CommitRepository();
-    this.redisInstance = redisInstance || new AppSettings();
-    this.commitClient =
-      commitClient ||
-      new GithubCommit(baseurl, owner, repo, token, startdate, pagesize);
-  }
+    public appSetting: AppSettings,
+    public commitRepo: CommitRepository,
+    public commitClient: GithubCommit,
+  ) {}
 
   async saveCommits(commits: CommitInfo[]) {
     return await this.commitRepo.saveCommits(commits);
@@ -68,7 +53,7 @@ export class CommitController {
     const startTime = performance.now();
 
     // Get application settings from Redis (includes repo, owner, start date)
-    const appSetting = await this.redisInstance.getAppSettings(config);
+    const appSetting = await this.appSetting.getAppSettings(config);
     console.log("APP-SETTING", appSetting);
     try {
       // Get the most recent commit date to avoid fetching duplicate commits
@@ -145,15 +130,6 @@ export class CommitController {
     startDate: string,
     owner: string,
   ): Promise<boolean> {
-    return await this.redisInstance.InitAppSettings(repo, startDate, owner);
+    return await this.appSetting.initAppSettings(repo, startDate, owner);
   }
 }
-
-export const ctrl = new CommitController(
-  config.githubBaseUrl,
-  config.githubOwner,
-  config.githubRepo,
-  config.githubToken,
-  config.startDate,
-  config.githubPageSize,
-);
