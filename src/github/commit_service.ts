@@ -27,7 +27,7 @@ export class GithubCommit extends BaseGithub {
       repo || this.repo,
       owner || this.owner,
     );
-    const headers = this.getDefaultHeaders(this.token);
+    const headers = this.getDefaultHeaders();
 
     try {
       const response = await this.makeRequest(url, headers);

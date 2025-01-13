@@ -1,4 +1,4 @@
-import { AppDataSource } from "./pg_database";
+import { appDataSource } from "./pg_database";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { CommitSumm } from "../db/entities/commit_summ";
 import { BuildPaginator, Order } from "../paginator/paginator";
@@ -6,7 +6,7 @@ import chalk from "chalk";
 
 export class CommitRepository {
   public constructor(
-    public commitReposit = AppDataSource.getRepository(CommitInfo),
+    public commitReposit = appDataSource.getRepository(CommitInfo),
   ) {}
 
   async saveCommit(commitInfo: CommitInfo): Promise<CommitInfo> {

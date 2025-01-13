@@ -1,8 +1,9 @@
-import { config, Config } from "./../config/config";
+import { Config } from "./../config/config";
 import { DataSource } from "typeorm";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { RepoInfo } from "../db/entities/repo_entity";
 
+export let appDataSource: DataSource;
 export function setupDataSource(config: Config): DataSource {
   const dataSource = new DataSource({
     type: "postgres",
@@ -15,8 +16,6 @@ export function setupDataSource(config: Config): DataSource {
     logging: true,
     synchronize: true,
   });
-
+  appDataSource = dataSource;
   return dataSource;
 }
-
-export const AppDataSource = setupDataSource(config);

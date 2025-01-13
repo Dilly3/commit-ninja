@@ -1,60 +1,27 @@
-import express, { Express, Request, Response } from "express";
-import { AppDataSource } from "./internal/repository/pg_database";
-import { config } from "./internal/config/config";
-
-import bodyParser from "body-parser";
-import Cors from "cors";
-import { ApiError } from "./internal/error/app_error";
-import { CommitController } from "./internal/controller/commit";
+import {
+  appDataSource,
+  setupDataSource,
+} from "./internal/repository/pg_database";
+import { initConfig } from "./internal/config/config";
+import { initCommitController } from "./internal/controller/commit";
+import { app } from "./internal/server/app";
 import { ScheduleJob } from "./internal/cron/cron";
+import { initializeRedisClient } from "./internal/redis/redis";
 
-const app: Express = express();
-
-app.use(bodyParser.json());
-
-app.use(Cors());
-
-const JsonResponse = (res: Response, code: number, data: any) => {
-  res.status(code).json(data);
-};
-
-const ctrl = new CommitController(
-  config.githubBaseUrl,
-  config.githubOwner,
-  config.githubRepo,
-  config.githubToken,
-  config.startDate,
-  config.githubPageSize,
-);
+const config = initConfig();
+setupDataSource(config);
+const commitCtrl = initCommitController(config);
+console.log("commitCtrl after initialization:", commitCtrl.commitClient);
 
 // run cron job
-ScheduleJob(ctrl.fetchAndSaveCommits, "*/10 * * * *", true);
-
-app.get("/", async (_: Request, res: Response) => {
-  try {
-    const commits = await ctrl.fetchAndSaveCommits();
-    JsonResponse(res, 200, { commits });
-  } catch (error) {
-    JsonResponse(res, 500, { error });
-  }
-});
-
-app.get("/count", async (_: Request, res: Response) => {
-  try {
-    const autCount = await ctrl.getAuthoursCommitCount();
-    res.status(200).json({ autCount });
-  } catch (error) {
-    if (error instanceof Error) {
-      let errorObj: ApiError = new ApiError(error.message);
-      res.status(500).json(errorObj);
-    }
-  }
-});
 
 // initialize database and app
-AppDataSource.initialize()
-  .then(() => {
+appDataSource
+  .initialize()
+  .then(async () => {
     console.log("connected to db");
+    await initializeRedisClient(config);
+    ScheduleJob(commitCtrl.fetchAndSaveCommits, "*/2 * * * *", true);
     app.listen(config.port, () => {
       console.log(`listening on port: ${config.port}`);
     });

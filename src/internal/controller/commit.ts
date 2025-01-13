@@ -1,32 +1,43 @@
 import { GithubCommit } from "../../github/commit_service";
 import { CommitInfo } from "../db/entities/commit_entity";
-import { AppSettings } from "../redis/redis";
+
 import { CommitRepository } from "../repository/commit";
-import { config } from "../../internal/config/config";
+import { Config, initConfig } from "../../internal/config/config";
+import { getAppSettings, initAppSettings } from "../redis/redis";
 
 enum constants {
   BATCHSIZE = 25,
 }
+export let commitCtrl: CommitController;
 export class CommitController {
   commitRepo: CommitRepository;
   commitClient: GithubCommit;
-  redisInstance: AppSettings;
+
   constructor(
     baseurl: string,
     owner: string,
     repo: string,
-    token: string,
     startdate: string,
     pagesize: number,
     commitRepo?: CommitRepository,
-    redisInstance?: AppSettings,
     commitClient?: GithubCommit,
   ) {
+    console.log("Starting CommitController initialization");
+    const config = initConfig();
+    console.log("Config initialized:", config);
     this.commitRepo = commitRepo || new CommitRepository();
-    this.redisInstance = redisInstance || new AppSettings();
+    console.log("CommitRepo initialized:", this.commitRepo);
     this.commitClient =
       commitClient ||
-      new GithubCommit(baseurl, owner, repo, token, startdate, pagesize);
+      new GithubCommit(
+        baseurl,
+        owner,
+        repo,
+        config.githubToken,
+        startdate,
+        pagesize,
+      );
+    console.log("CommitClient initialized:", this.commitClient);
   }
 
   async saveCommits(commits: CommitInfo[]) {
@@ -64,11 +75,12 @@ export class CommitController {
    * @throws Error if any operation fails during the process
    */
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
+    const config = initConfig();
     // Track execution time for performance monitoring
     const startTime = performance.now();
 
     // Get application settings from Redis (includes repo, owner, start date)
-    const appSetting = await this.redisInstance.getAppSettings(config);
+    const appSetting = await getAppSettings(config);
     console.log("APP-SETTING", appSetting);
     try {
       // Get the most recent commit date to avoid fetching duplicate commits
@@ -145,15 +157,17 @@ export class CommitController {
     startDate: string,
     owner: string,
   ): Promise<boolean> {
-    return await this.redisInstance.InitAppSettings(repo, startDate, owner);
+    return await initAppSettings(repo, startDate, owner);
   }
 }
 
-export const ctrl = new CommitController(
-  config.githubBaseUrl,
-  config.githubOwner,
-  config.githubRepo,
-  config.githubToken,
-  config.startDate,
-  config.githubPageSize,
-);
+export function initCommitController(config: Config): CommitController {
+  commitCtrl = new CommitController(
+    config.githubBaseUrl,
+    config.githubOwner,
+    config.githubRepo,
+    config.startDate,
+    config.githubPageSize,
+  );
+  return commitCtrl;
+}
