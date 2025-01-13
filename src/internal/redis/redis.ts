@@ -1,5 +1,5 @@
 import Redis from "ioredis";
-import { config, Config } from "../config/config";
+import { Config } from "../config/config";
 import { ApiError } from "../error/app_error";
 
 export interface Setting {
@@ -9,14 +9,9 @@ export interface Setting {
 }
 
 export class AppSettings {
-  constructor(
-    public redisInstance = new Redis({
-      host: config.redisHost,
-      port: config.redisPort,
-    }),
-  ) {}
+  constructor(public redisInstance: Redis) {}
 
-  async InitAppSettings(
+  async initAppSettings(
     repo: string,
     startDate: string,
     owner?: string,
