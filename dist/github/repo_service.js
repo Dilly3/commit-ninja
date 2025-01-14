@@ -14,10 +14,13 @@ const class_transformer_1 = require("class-transformer");
 const models_1 = require("./models");
 const base_github_1 = require("./base_github");
 class GithubRepo extends base_github_1.BaseGithub {
+    constructor(baseUrl, owner, repo, token) {
+        super(baseUrl, owner, repo, token);
+    }
     getRepo() {
         return __awaiter(this, arguments, void 0, function* (repo = this.repo, owner = this.owner) {
             const url = `${this.baseUrl}/repos/${owner}/${repo}`;
-            const headers = this.getDefaultHeaders();
+            const headers = this.getDefaultHeaders(this.token);
             try {
                 const response = yield this.makeRequest(url, headers);
                 return yield response.json();

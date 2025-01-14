@@ -18,7 +18,7 @@ const commit_entity_1 = require("../db/entities/commit_entity");
 const paginator_1 = require("../paginator/paginator");
 const chalk_1 = __importDefault(require("chalk"));
 class CommitRepository {
-    constructor(commitReposit = pg_database_1.AppDataSource.getRepository(commit_entity_1.CommitInfo)) {
+    constructor(commitReposit = (0, pg_database_1.getAppDataSourceInstance)().getRepository(commit_entity_1.CommitInfo)) {
         this.commitReposit = commitReposit;
     }
     saveCommit(commitInfo) {
@@ -117,15 +117,19 @@ class CommitRepository {
                 .getRawMany();
         });
     }
-    getDateOfLastCommit() {
+    getDateOfLastCommit(repoName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const mostRecentCommit = yield this.commitReposit
+                const query = this.commitReposit
                     .createQueryBuilder("commit")
                     .select("commit.date")
                     .orderBy("commit.date", "DESC")
-                    .limit(1)
-                    .getOne();
+                    .limit(1);
+                // Add repo name filter if provided
+                if (repoName) {
+                    query.where("commit.repo_name = :repoName", { repoName });
+                }
+                const mostRecentCommit = yield query.getOne();
                 console.log(chalk_1.default.blue("Most recent commit found:", mostRecentCommit)); // Debug log
                 if (!mostRecentCommit) {
                     console.log(chalk_1.default.red("No commits found in database")); // Debug log

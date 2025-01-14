@@ -18,12 +18,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --ext .js,.ts .",
     "dev": "nodemon",
-    "start": "node dist/index.js",
+    "start": "FORCE_COLOR=1 node dist/index.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
   },
   "dependencies": {
+    "@types/chalk": "^0.4.31",
     "@types/cors": "^2.8.17",
     "body-parser": "^1.20.3",
+    "chalk": "^4.1.2",
     "class-transformer": "^0.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -43,7 +45,6 @@
     "@types/ioredis": "^4.28.10",
     "@types/node": "^22.10.3",
     "@types/redis": "^4.0.10",
-    "chalk": "^4.1.2",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
     "nodemon": "^3.1.9",

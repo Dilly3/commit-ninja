@@ -3,12 +3,15 @@ import { RepoResponse } from "./models";
 import { BaseGithub } from "./base_github";
 
 export class GithubRepo extends BaseGithub {
+  constructor(baseUrl: string, owner: string, repo: string, token: string) {
+    super(baseUrl, owner, repo, token);
+  }
   async getRepo(
     repo: string = this.repo,
-    owner: string = this.owner
+    owner: string = this.owner,
   ): Promise<RepoResponse> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}`;
-    const headers = this.getDefaultHeaders();
+    const headers = this.getDefaultHeaders(this.token);
     try {
       const response = await this.makeRequest(url, headers);
       return await response.json();
@@ -32,4 +35,4 @@ export class GithubRepo extends BaseGithub {
       size: repo.size,
     };
   }
-} 
+}

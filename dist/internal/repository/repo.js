@@ -13,7 +13,7 @@ exports.RepoRepository = void 0;
 const repo_entity_1 = require("./../db/entities/repo_entity");
 const pg_database_1 = require("./pg_database");
 class RepoRepository {
-    constructor(RepoReposit = pg_database_1.AppDataSource.getRepository(repo_entity_1.RepoInfo)) {
+    constructor(RepoReposit = (0, pg_database_1.getAppDataSourceInstance)().getRepository(repo_entity_1.RepoInfo)) {
         this.RepoReposit = RepoReposit;
     }
     getRepoByName(name) {
