@@ -15,6 +15,8 @@ export class CommitController {
     public commitRepo: CommitRepository,
     public commitClient: GithubCommit,
     public config = getConfigInstance(),
+    private readonly BATCH_SIZE: number = (config.githubPageSize ??
+      constants.BATCHSIZE) * 2,
   ) {}
 
   async saveCommits(commits: CommitInfo[]) {
@@ -70,7 +72,7 @@ export class CommitController {
       let allCommits: CommitInfo[] = [];
 
       // Set up batch processing to optimize memory usage and database operations
-      const BATCH_SIZE = constants.BATCHSIZE; // Default is 25
+
       let batchCommits: CommitInfo[] = [];
 
       // Continue fetching commits until no more are available
@@ -98,7 +100,7 @@ export class CommitController {
         batchCommits.push(...commitInfos);
 
         // When batch size is reached, save to database and reset batch
-        if (batchCommits.length >= BATCH_SIZE) {
+        if (batchCommits.length >= this.BATCH_SIZE) {
           await this.saveCommits(batchCommits);
           allCommits.push(...batchCommits);
           batchCommits = [];
@@ -131,9 +133,15 @@ export class CommitController {
   async setSetting(
     repo: string,
     startDate: string,
-    owner: string,
+    cronDelay?: string,
+    owner?: string,
   ): Promise<boolean> {
-    return await this.appSetting.initAppSettings(repo, startDate, owner);
+    return await this.appSetting.initAppSettings(
+      repo,
+      startDate,
+      cronDelay,
+      owner,
+    );
   }
 }
 

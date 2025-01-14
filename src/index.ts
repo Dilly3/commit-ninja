@@ -1,5 +1,5 @@
 import { initDataSource } from "./internal/repository/pg_database";
-import { ScheduleJob } from "./internal/cron/cron";
+import { getEnumDelay, ScheduleJob } from "./internal/cron/cron";
 import { initCommitController } from "./internal/controller/commit";
 import { initRedis } from "./internal/redis/redis";
 import { initExpressApp } from "./internal/server/app";
@@ -26,7 +26,13 @@ const commitCtrl = initCommitController(redisClient, config);
 const app = initExpressApp();
 
 // Start cron job with proper binding
-ScheduleJob(() => commitCtrl.fetchAndSaveCommits(), "*/2 * * * *", true);
+commitCtrl.appSetting.getAppSettings(config).then((setting) => {
+  ScheduleJob(
+    () => commitCtrl.fetchAndSaveCommits(),
+    getEnumDelay(setting.CronDelay),
+    true,
+  );
+});
 
 app.listen(config.port, () => {
   console.log(`Listening on port: ${config.port}`);
