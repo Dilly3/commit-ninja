@@ -25,9 +25,10 @@ export function loggerMiddleware(
   const method = colorizeMethod(req.method);
   const time = new Date(Date.now()).toString();
   console.log(
-    `Method:${method}, Host:${chalk.yellow(req.hostname)}, 
-    Path: ${chalk.blue(req.path)}, 
-    Time: ${chalk.bgCyan(time)}`,
+    `Method:${method}, Host:${chalk.yellow(req.hostname)}, ` +
+      `Path: ${chalk.blue(req.path)}, ` +
+      `User-Agent: ${chalk.magenta(req.get("user-agent") || "none")}, ` +
+      `Time: ${chalk.bgCyan(time)}`,
   );
   next();
 }
