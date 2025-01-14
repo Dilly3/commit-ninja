@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import { getConfigInstance } from "../../config/config";
 import { getCommitControllerInstance } from "../../controller/commit";
 import { jsonResponse } from "../response";
@@ -13,6 +14,14 @@ export async function setSettingsHandler(
   req: Request<{}, {}, setSettings>,
   res: Response,
 ) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    jsonResponse(res, 400, {
+      message: "Validation failed",
+      errors: errors.array(),
+    });
+    return;
+  }
   const commitCtrl = getCommitControllerInstance();
   const config = getConfigInstance();
   const ok = await commitCtrl.setSetting(
