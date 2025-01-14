@@ -1,4 +1,4 @@
-import { config } from "../config/config";
+import { getConfigInstance } from "../config/config";
 
 const nodeCron = require("node-cron");
 
@@ -16,6 +16,7 @@ export const ScheduleJob = (
   scheduler: string,
   scheduled: boolean,
 ) => {
+  const config = getConfigInstance();
   try {
     nodeCron.schedule(
       scheduler,

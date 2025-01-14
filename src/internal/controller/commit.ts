@@ -1,17 +1,20 @@
+import { Redis } from "ioredis";
 import { GithubCommit } from "../../github/commit_service";
+import { Config, getConfigInstance } from "../config/config";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { AppSettings } from "../redis/redis";
 import { CommitRepository } from "../repository/commit";
-import { config } from "../../internal/config/config";
 
 enum constants {
   BATCHSIZE = 25,
 }
+let commitController: CommitController;
 export class CommitController {
   constructor(
     public appSetting: AppSettings,
     public commitRepo: CommitRepository,
     public commitClient: GithubCommit,
+    public config = getConfigInstance(),
   ) {}
 
   async saveCommits(commits: CommitInfo[]) {
@@ -53,13 +56,13 @@ export class CommitController {
     const startTime = performance.now();
 
     // Get application settings from Redis (includes repo, owner, start date)
-    const appSetting = await this.appSetting.getAppSettings(config);
+    const appSetting = await this.appSetting.getAppSettings(this.config);
     console.log("APP-SETTING", appSetting);
     try {
       // Get the most recent commit date to avoid fetching duplicate commits
       // Falls back to config.githubRepo(set in env) if appSetting.Repo(set in redis) is not available
       const lastCommitDate = await this.getLastCommitDate(
-        appSetting.Repo ?? config.githubRepo,
+        appSetting.Repo ?? this.config.githubRepo,
       );
       console.log("Last commit date:", lastCommitDate);
 
@@ -132,4 +135,26 @@ export class CommitController {
   ): Promise<boolean> {
     return await this.appSetting.initAppSettings(repo, startDate, owner);
   }
+}
+
+export function getCommitControllerInstance(): CommitController {
+  return commitController;
+}
+
+export function initCommitController(
+  redisClient: Redis,
+  config: Config,
+): CommitController {
+  const commitRepo = new CommitRepository();
+  const appSetting = new AppSettings(redisClient);
+  const commitClient = new GithubCommit(
+    config.githubBaseUrl,
+    config.githubOwner,
+    config.githubRepo,
+    config.githubToken,
+    config.startDate,
+    config.githubPageSize,
+  );
+  commitController = new CommitController(appSetting, commitRepo, commitClient);
+  return commitController;
 }

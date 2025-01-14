@@ -1,57 +1,18 @@
-import express, { Express, Request, Response } from "express";
-import { AppDataSource } from "./internal/repository/pg_database";
-import { config } from "./internal/config/config";
-
-import bodyParser from "body-parser";
-import Cors from "cors";
-import { ApiError } from "./internal/error/app_error";
-//import { CommitController } from "./internal/controller/commit";
+import { initDataSource } from "./internal/repository/pg_database";
 import { ScheduleJob } from "./internal/cron/cron";
-import { CommitController } from "./internal/controller/commit";
-import { CommitRepository } from "./internal/repository/commit";
-import { AppSettings } from "./internal/redis/redis";
-import { GithubCommit } from "./github/commit_service";
-import { Redis } from "ioredis";
+import { initCommitController } from "./internal/controller/commit";
+import { initRedis } from "./internal/redis/redis";
+import { initExpressApp } from "./internal/server/app";
+import { initConfig } from "./internal/config/config";
 
-const redisClient = new Redis({
-  host: config.redisHost,
-  port: config.redisPort,
-  // Add retry strategy
-  retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
-});
+const config = initConfig();
+const appDataSource = initDataSource(config);
 
-// 2. Handle Redis events properly
-redisClient.on("error", (err) => {
-  console.error("Redis Client Error:", err);
-});
-
-redisClient.on("connect", () => {
-  console.log("Redis Client Connected");
-});
-
-const app: Express = express();
-
-app.use(bodyParser.json());
-
-app.use(Cors());
-
-const JsonResponse = (res: Response, code: number, data: any) => {
-  res.status(code).json(data);
-};
-
-interface setSettings {
-  repo?: string;
-  owner?: string;
-  start_date?: string;
-}
-
-// run cron job
+const redisClient = initRedis();
 
 redisClient.on("ready", () => {
-  AppDataSource.initialize()
+  appDataSource
+    .initialize()
     .then(() => {
       console.log("Connected to DB");
     })
@@ -60,55 +21,10 @@ redisClient.on("ready", () => {
     });
 });
 
-const commitRepo = new CommitRepository();
-const appSetting = new AppSettings(redisClient);
-const commitClient = new GithubCommit(
-  config.githubBaseUrl,
-  config.githubOwner,
-  config.githubRepo,
-  config.githubToken,
-  config.startDate,
-  config.githubPageSize,
-);
-const commitCtrl = new CommitController(appSetting, commitRepo, commitClient);
+const commitCtrl = initCommitController(redisClient, config);
 
-app.get("/", async (_: Request, res: Response) => {
-  try {
-    const commits = await commitCtrl.fetchAndSaveCommits();
-    JsonResponse(res, 200, { commits });
-  } catch (error) {
-    JsonResponse(res, 500, { error });
-  }
-});
+const app = initExpressApp();
 
-app.get("/count", async (_: Request, res: Response) => {
-  try {
-    const autCount = await commitCtrl.getAuthoursCommitCount();
-    res.status(200).json({ autCount });
-  } catch (error) {
-    if (error instanceof Error) {
-      let errorObj: ApiError = new ApiError(error.message);
-      res.status(500).json(errorObj);
-    }
-  }
-});
-
-app.post(
-  "/settings",
-  async (req: Request<{}, {}, setSettings>, res: Response) => {
-    const ok = await commitCtrl.setSetting(
-      req.body.repo ?? config.githubRepo,
-      req.body.start_date ?? config.startDate,
-      req.body.owner ?? config.githubOwner,
-    );
-
-    if (ok) {
-      JsonResponse(res, 200, { message: "settings set" });
-      return;
-    }
-    JsonResponse(res, 500, { message: "setting failed" });
-  },
-);
 // Start cron job with proper binding
 ScheduleJob(() => commitCtrl.fetchAndSaveCommits(), "*/2 * * * *", true);
 

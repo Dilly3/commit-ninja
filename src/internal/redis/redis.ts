@@ -1,7 +1,6 @@
 import Redis from "ioredis";
-import { Config } from "../config/config";
+import { Config, getConfigInstance } from "../config/config";
 import { ApiError } from "../error/app_error";
-
 export interface Setting {
   Repo: string;
   Owner: string;
@@ -56,4 +55,29 @@ export class AppSettings {
   async getAppSettings(config: Config): Promise<Setting> {
     return await this.appSettings(config);
   }
+}
+
+export function initRedis(): Redis{
+  const config = getConfigInstance()
+  const redisClient = new Redis({
+    host: config.redisHost,
+    port: config.redisPort,
+    // Add retry strategy
+    retryStrategy: (times) => {
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+  });
+
+  // 2. Handle Redis events properly
+  redisClient.on("error", (err) => {
+    console.error("Redis Client Error:", err);
+    throw err
+  });
+
+  redisClient.on("connect", () => {
+    console.log("Redis Client Connected");
+  });
+
+  return redisClient
 }

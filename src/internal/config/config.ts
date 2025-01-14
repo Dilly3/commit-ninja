@@ -11,6 +11,7 @@ enum configDefaults {
   DefaultTimeZone = "Africa/Lagos",
 }
 dotenv.config();
+let config:Config;
 export class Config {
   constructor(
     public port = process.env.PORT ?? configDefaults.DefaultAppPort,
@@ -39,4 +40,12 @@ export class Config {
   ) {}
 }
 
-export const config = new Config();
+export function initConfig() :Config {
+  config = new Config()
+  return config
+}
+
+
+export function getConfigInstance():Config{
+  return config
+}
