@@ -29,12 +29,12 @@ class BaseGithub {
             return response;
         });
     }
-    getDefaultHeaders() {
+    getDefaultHeaders(token) {
         return new Headers({
             "Content-Type": "application/json",
             Accept: "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
-            Authorization: `Bearer ${this.token}`,
+            Authorization: `Bearer ${token}`,
         });
     }
 }
