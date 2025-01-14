@@ -2,8 +2,9 @@ import { getConfigInstance } from "../config/config";
 
 const nodeCron = require("node-cron");
 
-type cronFunction = () => {};
-export enum cronDelay {
+type CronFunction = () => {};
+
+export enum CronSchedule {
   TWO_MINUTES = "*/2 * * * *",
   FIVE_MINUTES = "*/5 * * * *",
   TEN_MINUTES = "*/10 * * * *",
@@ -11,20 +12,30 @@ export enum cronDelay {
   DAILY = "0 0 * * *",
 }
 
-export function getEnumDelay(delay: string) {
-  switch (delay) {
-    case "2m":
-      return cronDelay.TWO_MINUTES;
-    case "5m":
-      return cronDelay.FIVE_MINUTES;
-    case "10m":
-      return cronDelay.TEN_MINUTES;
-    case "1h":
-      return cronDelay.HOURLY;
-    case "24h":
-      return cronDelay.DAILY;
+export enum CronInterval {
+  TWO_MINUTES = "2m",
+  FIVE_MINUTES = "5m",
+  TEN_MINUTES = "10m",
+  HOURLY = "1h",
+  DAILY = "24h",
+}
+
+export function convertIntervalToSchedule(
+  interval: string,
+): CronSchedule {
+  switch (interval) {
+    case CronInterval.TWO_MINUTES:
+      return CronSchedule.TWO_MINUTES;
+    case CronInterval.FIVE_MINUTES:
+      return CronSchedule.FIVE_MINUTES;
+    case CronInterval.TEN_MINUTES:
+      return CronSchedule.TEN_MINUTES;
+    case CronInterval.HOURLY:
+      return CronSchedule.HOURLY;
+    case CronInterval.DAILY:
+      return CronSchedule.DAILY;
     default:
-      return cronDelay.HOURLY;
+      return CronSchedule.HOURLY;
   }
 }
 
@@ -36,7 +47,7 @@ export function getEnumDelay(delay: string) {
  * @returns void
  */
 export const ScheduleJob = (
-  cronJob: cronFunction,
+  cronJob: CronFunction,
   scheduler: string,
   scheduled: boolean,
 ) => {

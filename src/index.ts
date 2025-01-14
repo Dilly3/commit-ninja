@@ -1,5 +1,5 @@
 import { initDataSource } from "./internal/repository/pg_database";
-import { getEnumDelay, ScheduleJob } from "./internal/cron/cron";
+import { convertIntervalToSchedule, ScheduleJob } from "./internal/cron/cron";
 import { initCommitController } from "./internal/controller/commit";
 import { initRedis } from "./internal/redis/redis";
 import { initExpressApp } from "./internal/server/app";
@@ -29,7 +29,7 @@ const app = initExpressApp();
 commitCtrl.appSetting.getAppSettings(config).then((setting) => {
   ScheduleJob(
     () => commitCtrl.fetchAndSaveCommits(),
-    getEnumDelay(setting.CronDelay),
+    convertIntervalToSchedule(setting.CronDelay),
     true,
   );
 });
