@@ -28,7 +28,8 @@ export function loggerMiddleware(
     `Method:${method}, Host:${chalk.yellow(req.hostname)}, ` +
       `Path: ${chalk.blue(req.path)}, ` +
       `User-Agent: ${chalk.magenta(req.get("user-agent") || "none")}, ` +
-      `Time: ${chalk.bgCyan(time)}`,
+      `Time: ${chalk.bgCyan(time)}\n`,
   );
+
   next();
 }
