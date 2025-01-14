@@ -1,8 +1,10 @@
 import { MaxStars, RepoInfo } from "./../db/entities/repo_entity";
-import { AppDataSource } from "./pg_database";
+import { getAppDataSourceInstance } from "./pg_database";
 
 export class RepoRepository {
-  constructor(public RepoReposit = AppDataSource.getRepository(RepoInfo)) {}
+  constructor(
+    public RepoReposit = getAppDataSourceInstance().getRepository(RepoInfo),
+  ) {}
 
   async getRepoByName(name: string) {
     return await this.RepoReposit.findOne({
