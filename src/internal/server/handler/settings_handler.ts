@@ -7,6 +7,7 @@ interface setSettings {
   repo?: string;
   owner?: string;
   start_date?: string;
+  cron_delay: string;
 }
 export async function setSettingsHandler(
   req: Request<{}, {}, setSettings>,
@@ -17,6 +18,7 @@ export async function setSettingsHandler(
   const ok = await commitCtrl.setSetting(
     req.body.repo ?? config.githubRepo,
     req.body.start_date ?? config.startDate,
+    req.body.cron_delay ?? config.cronDelay,
     req.body.owner ?? config.githubOwner,
   );
 
