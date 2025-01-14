@@ -23,8 +23,9 @@ function colorizeMethod(method) {
 function loggerMiddleware(req, _, next) {
     const method = colorizeMethod(req.method);
     const time = new Date(Date.now()).toString();
-    console.log(`Method:${method}, Host:${chalk_1.default.yellow(req.hostname)}, 
-    Path: ${chalk_1.default.blue(req.path)}, 
-    Time: ${chalk_1.default.bgCyan(time)}`);
+    console.log(`Method:${method}, Host:${chalk_1.default.yellow(req.hostname)}, ` +
+        `Path: ${chalk_1.default.blue(req.path)}, ` +
+        `User-Agent: ${chalk_1.default.magenta(req.get("user-agent") || "none")}, ` +
+        `Time: ${chalk_1.default.bgCyan(time)}`);
     next();
 }
