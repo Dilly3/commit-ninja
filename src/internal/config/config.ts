@@ -9,9 +9,10 @@ enum configDefaults {
   DefaultAppPort = "7020",
   DefaultRedisPort = 6379,
   DefaultTimeZone = "Africa/Lagos",
+  DefaultCronDelay = "5m",
 }
 dotenv.config();
-let config:Config;
+let config: Config;
 export class Config {
   constructor(
     public port = process.env.PORT ?? configDefaults.DefaultAppPort,
@@ -37,15 +38,16 @@ export class Config {
 
     public startDate = process.env.GITHUB_START_DATE ?? "",
     public TZ = process.env.TZ ?? configDefaults.DefaultTimeZone,
+    public cronDelay = process.env.CRON_DELAY ??
+      configDefaults.DefaultCronDelay,
   ) {}
 }
 
-export function initConfig() :Config {
-  config = new Config()
-  return config
+export function initConfig(): Config {
+  config = new Config();
+  return config;
 }
 
-
-export function getConfigInstance():Config{
-  return config
+export function getConfigInstance(): Config {
+  return config;
 }
