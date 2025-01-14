@@ -5,6 +5,7 @@ export interface Setting {
   Repo: string;
   Owner: string;
   StartDate: string;
+  CronDelay: string;
 }
 
 export class AppSettings {
@@ -13,6 +14,7 @@ export class AppSettings {
   async initAppSettings(
     repo: string,
     startDate: string,
+    cronDelay?: string,
     owner?: string,
   ): Promise<boolean> {
     const isoDate = new Date(startDate).toISOString();
@@ -22,6 +24,9 @@ export class AppSettings {
       this.redisInstance.set("repo", repo),
       this.redisInstance.set("startDate", isoDate),
     ];
+
+    if (cronDelay)
+      operations.push(this.redisInstance.set("cronDelay", cronDelay));
 
     if (owner) operations.push(this.redisInstance.set("owner", owner));
 
@@ -36,16 +41,18 @@ export class AppSettings {
 
   private async appSettings(config: Config): Promise<Setting> {
     try {
-      const [owner, repo, startDate] = await Promise.all([
+      const [owner, repo, startDate, cronDelay] = await Promise.all([
         this.redisInstance.get("owner"),
         this.redisInstance.get("repo"),
         this.redisInstance.get("startDate"),
+        this.redisInstance.get("cronDelay"),
       ]);
 
       return {
         Owner: owner ?? config.githubOwner,
         Repo: repo ?? config.githubRepo,
         StartDate: startDate ?? config.startDate,
+        CronDelay: cronDelay ?? config.cronDelay,
       };
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unknown Redis error");
@@ -57,8 +64,8 @@ export class AppSettings {
   }
 }
 
-export function initRedis(): Redis{
-  const config = getConfigInstance()
+export function initRedis(): Redis {
+  const config = getConfigInstance();
   const redisClient = new Redis({
     host: config.redisHost,
     port: config.redisPort,
@@ -72,12 +79,12 @@ export function initRedis(): Redis{
   // 2. Handle Redis events properly
   redisClient.on("error", (err) => {
     console.error("Redis Client Error:", err);
-    throw err
+    throw err;
   });
 
   redisClient.on("connect", () => {
     console.log("Redis Client Connected");
   });
 
-  return redisClient
+  return redisClient;
 }
