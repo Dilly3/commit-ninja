@@ -6,6 +6,21 @@ export class RepoRepository {
     public RepoReposit = getAppDataSourceInstance().getRepository(RepoInfo),
   ) {}
 
+  async saveRepo(repoInfo: RepoInfo): Promise<RepoInfo> {
+    const existingRepo = await this.RepoReposit.findOne({
+      where: { name: repoInfo.name, id: repoInfo.id },
+    });
+
+    if (existingRepo) {
+      // Update existing repo with new information
+      Object.assign(existingRepo, repoInfo);
+      console.log("new repo!!!!!!:", repoInfo);
+      console.log("existing repo!!!!!!:", existingRepo);
+      return await this.RepoReposit.save(existingRepo);
+    }
+    return await this.RepoReposit.save(repoInfo);
+  }
+
   async getRepoByName(name: string) {
     return await this.RepoReposit.findOne({
       where: {
