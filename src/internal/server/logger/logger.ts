@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { NextFunction, Request, Response } from "express";
 
+// force colour log
 chalk.level = 2;
 
 function colorizeMethod(method: string): string {

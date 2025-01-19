@@ -16,6 +16,21 @@ class RepoRepository {
     constructor(RepoReposit = (0, pg_database_1.getAppDataSourceInstance)().getRepository(repo_entity_1.RepoInfo)) {
         this.RepoReposit = RepoReposit;
     }
+    saveRepo(repoInfo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const existingRepo = yield this.RepoReposit.findOne({
+                where: { name: repoInfo.name, id: repoInfo.id },
+            });
+            if (existingRepo) {
+                // Update existing repo with new information
+                Object.assign(existingRepo, repoInfo);
+                console.log("new repo!!!!!!:", repoInfo);
+                console.log("existing repo!!!!!!:", existingRepo);
+                return yield this.RepoReposit.save(existingRepo);
+            }
+            return yield this.RepoReposit.save(repoInfo);
+        });
+    }
     getRepoByName(name) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.RepoReposit.findOne({

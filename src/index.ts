@@ -4,6 +4,7 @@ import { initCommitController } from "./internal/controller/commit";
 import { initRedis } from "./internal/redis/redis";
 import { initExpressApp } from "./internal/server/app";
 import { initConfig } from "./internal/config/config";
+import { initRepoController } from "./internal/controller/repo";
 
 const config = initConfig();
 const appDataSource = initDataSource(config);
@@ -22,13 +23,14 @@ redisClient.on("ready", () => {
 });
 
 const commitCtrl = initCommitController(redisClient, config);
+const repoCtrl = initRepoController(redisClient, config);
 
 const app = initExpressApp();
 
 // Start cron job with proper binding
 commitCtrl.appSetting.getAppSettings(config).then((setting) => {
   ScheduleJob(
-    () => commitCtrl.fetchAndSaveCommits(),
+    [() => commitCtrl.fetchAndSaveCommits(), () => repoCtrl.fetchAndSaveRepo()],
     convertIntervalToSchedule(setting.CronDelay),
     true,
   );

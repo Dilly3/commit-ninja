@@ -20,9 +20,7 @@ export enum CronInterval {
   DAILY = "24h",
 }
 
-export function convertIntervalToSchedule(
-  interval: string,
-): CronSchedule {
+export function convertIntervalToSchedule(interval: string): CronSchedule {
   switch (interval) {
     case CronInterval.TWO_MINUTES:
       return CronSchedule.TWO_MINUTES;
@@ -47,7 +45,7 @@ export function convertIntervalToSchedule(
  * @returns void
  */
 export const ScheduleJob = (
-  cronJob: CronFunction,
+  cronJobs: CronFunction[],
   scheduler: string,
   scheduled: boolean,
 ) => {
@@ -58,7 +56,7 @@ export const ScheduleJob = (
       () => {
         const now = new Date();
         console.log(`Running scheduled cron at : ${now.toISOString()}...`);
-        cronJob();
+        cronJobs.forEach((job) => job());
       },
       {
         scheduled: scheduled,
@@ -66,6 +64,6 @@ export const ScheduleJob = (
       },
     );
   } catch (error) {
-    console.error("Error scheduling cron job:", error);
+    console.error("Error scheduling cron job(s):", error);
   }
 };
