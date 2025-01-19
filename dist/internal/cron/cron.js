@@ -43,20 +43,20 @@ function convertIntervalToSchedule(interval) {
  * @param scheduled - Boolean flag to enable/disable the scheduled execution
  * @returns void
  */
-const ScheduleJob = (cronJob, scheduler, scheduled) => {
+const ScheduleJob = (cronJobs, scheduler, scheduled) => {
     const config = (0, config_1.getConfigInstance)();
     try {
         nodeCron.schedule(scheduler, () => {
             const now = new Date();
             console.log(`Running scheduled cron at : ${now.toISOString()}...`);
-            cronJob();
+            cronJobs.forEach((job) => job());
         }, {
             scheduled: scheduled,
             timezone: config.TZ,
         });
     }
     catch (error) {
-        console.error("Error scheduling cron job:", error);
+        console.error("Error scheduling cron job(s):", error);
     }
 };
 exports.ScheduleJob = ScheduleJob;

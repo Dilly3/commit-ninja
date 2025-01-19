@@ -11,19 +11,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GithubRepo = void 0;
 const class_transformer_1 = require("class-transformer");
-const models_1 = require("./models");
 const base_github_1 = require("./base_github");
+const models_1 = require("./models");
 class GithubRepo extends base_github_1.BaseGithub {
     constructor(baseUrl, owner, repo, token) {
         super(baseUrl, owner, repo, token);
     }
-    getRepo() {
-        return __awaiter(this, arguments, void 0, function* (repo = this.repo, owner = this.owner) {
+    getRepo(repo, owner) {
+        return __awaiter(this, void 0, void 0, function* () {
             const url = `${this.baseUrl}/repos/${owner}/${repo}`;
             const headers = this.getDefaultHeaders(this.token);
             try {
                 const response = yield this.makeRequest(url, headers);
-                return yield response.json();
+                const repoResponse = yield response.json();
+                return this.getRepoInstance(repoResponse);
             }
             catch (error) {
                 console.error("Failed to fetch repo:", error);
@@ -42,7 +43,8 @@ class GithubRepo extends base_github_1.BaseGithub {
             description: repo.description,
             forks: repo.forks,
             language: repo.language,
-            size: repo.size,
+            stars: repo.stars,
+            openIssues: repo.openIssues,
         };
     }
 }

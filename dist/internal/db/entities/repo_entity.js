@@ -35,23 +35,23 @@ __decorate([
     __metadata("design:type", String)
 ], RepoInfo.prototype, "url", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "description" }),
+    (0, typeorm_1.Column)({ name: "description", nullable: true }),
     __metadata("design:type", String)
 ], RepoInfo.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "language" }),
+    (0, typeorm_1.Column)({ name: "language", nullable: true }),
     __metadata("design:type", String)
 ], RepoInfo.prototype, "language", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "forks", type: "int" }),
+    (0, typeorm_1.Column)({ name: "forks", type: "int", nullable: true }),
     __metadata("design:type", Number)
 ], RepoInfo.prototype, "forks", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "stars", type: "int" }),
+    (0, typeorm_1.Column)({ name: "stars", type: "int", nullable: true }),
     __metadata("design:type", Number)
 ], RepoInfo.prototype, "stars", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: "open_issues", type: "int" }),
+    (0, typeorm_1.Column)({ name: "open_issues", type: "int", nullable: true }),
     __metadata("design:type", Number)
 ], RepoInfo.prototype, "openIssues", void 0);
 exports.RepoInfo = RepoInfo = __decorate([
