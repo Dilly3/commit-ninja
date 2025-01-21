@@ -1,6 +1,10 @@
 
-build:
-	@docker build --no-cache .
+up: install compile
+	@docker compose up --build
 
-run:
-	@docker run -p 7020:7020 -d commit-service
+install:
+	@npm install
+
+compile:
+	@tsc
+PHONY: build run compile install
