@@ -10,6 +10,7 @@ const cors_1 = __importDefault(require("cors"));
 const settings_router_1 = require("./router/settings_router");
 const commits_router_1 = require("./router/commits_router");
 const logger_1 = require("./logger/logger");
+const repo_router_1 = require("./router/repo_router");
 function initExpressApp() {
     const app = (0, express_1.default)();
     app.use(express_1.default.json());
@@ -23,5 +24,6 @@ function initExpressApp() {
     app.use(logger_1.loggerMiddleware);
     app.use("/settings", (0, settings_router_1.getSettingsRouter)());
     app.use("/commits", (0, commits_router_1.getCommitRouter)());
+    app.use("/repos", (0, repo_router_1.getRepoRouter)());
     return app;
 }

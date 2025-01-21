@@ -10,12 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RepoController = void 0;
-exports.initRepoController = initRepoController;
+exports.getRepoControllerInstance = getRepoControllerInstance;
+const class_transformer_1 = require("class-transformer");
 const redis_1 = require("../redis/redis");
 const repo_1 = require("../repository/repo");
 const config_1 = require("../config/config");
 const repo_service_1 = require("../../github/repo_service");
-let repoController;
+const repo_entity_1 = require("../db/entities/repo_entity");
+let repoController = null;
 class RepoController {
     constructor(appSetting, repoRepository, repoClient, config = (0, config_1.getConfigInstance)()) {
         this.appSetting = appSetting;
@@ -26,6 +28,12 @@ class RepoController {
     getRepoByName(name) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.repoRepository.getRepoByName(name);
+        });
+    }
+    getRepoByLanguage(language) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const repos = yield this.repoRepository.getRepoByLanguage(language);
+            return (0, class_transformer_1.plainToInstance)(repo_entity_1.RepoInfo, repos);
         });
     }
     getReposWithMostStars() {
@@ -67,5 +75,14 @@ function initRepoController(redisClient, config) {
     const appSetting = new redis_1.AppSettings(redisClient);
     const repoClient = new repo_service_1.GithubRepo(config.githubBaseUrl, config.githubOwner, config.githubRepo, config.githubToken);
     repoController = new RepoController(appSetting, repoRepository, repoClient);
+    return repoController;
+}
+function getRepoControllerInstance(redisClient, config) {
+    if (!repoController) {
+        if (!redisClient || !config) {
+            throw new Error("Redis client and config must be provided");
+        }
+        return initRepoController(redisClient, config);
+    }
     return repoController;
 }

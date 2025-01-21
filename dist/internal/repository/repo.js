@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RepoRepository = void 0;
+const class_transformer_1 = require("class-transformer");
 const repo_entity_1 = require("./../db/entities/repo_entity");
 const pg_database_1 = require("./pg_database");
 class RepoRepository {
@@ -24,11 +25,9 @@ class RepoRepository {
             if (existingRepo) {
                 // Update existing repo with new information
                 Object.assign(existingRepo, repoInfo);
-                console.log("new repo!!!!!!:", repoInfo);
-                console.log("existing repo!!!!!!:", existingRepo);
-                return yield this.RepoReposit.save(existingRepo);
+                return yield this.RepoReposit.save((0, class_transformer_1.plainToInstance)(repo_entity_1.RepoInfo, existingRepo));
             }
-            return yield this.RepoReposit.save(repoInfo);
+            return yield this.RepoReposit.save((0, class_transformer_1.plainToInstance)(repo_entity_1.RepoInfo, repoInfo));
         });
     }
     getRepoByName(name) {
@@ -38,6 +37,14 @@ class RepoRepository {
                     name: name,
                 },
             });
+        });
+    }
+    getRepoByLanguage(language) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const query = this.RepoReposit.createQueryBuilder("repo")
+                .where("repo.language = :language", { language: language })
+                .getMany();
+            return yield query;
         });
     }
     getReposWithMostStars() {
