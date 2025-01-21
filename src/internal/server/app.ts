@@ -4,6 +4,7 @@ import cors from "cors";
 import { getSettingsRouter } from "./router/settings_router";
 import { getCommitRouter } from "./router/commits_router";
 import { loggerMiddleware } from "./logger/logger";
+import { getRepoRouter } from "./router/repo_router";
 
 export function initExpressApp(): Express {
   const app: Express = express();
@@ -24,6 +25,7 @@ export function initExpressApp(): Express {
   app.use(loggerMiddleware);
   app.use("/settings", getSettingsRouter());
   app.use("/commits", getCommitRouter());
+  app.use("/repos", getRepoRouter());
 
   return app;
 }
