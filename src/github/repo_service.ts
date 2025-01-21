@@ -6,10 +6,7 @@ export class GithubRepo extends BaseGithub {
   constructor(baseUrl: string, owner: string, repo: string, token: string) {
     super(baseUrl, owner, repo, token);
   }
-  async getRepo(
-    repo: string,
-    owner: string,
-  ): Promise<RepoResponse> {
+  async getRepo(repo: string, owner: string): Promise<RepoResponse> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}`;
     const headers = this.getDefaultHeaders(this.token);
     try {
@@ -32,7 +29,7 @@ export class GithubRepo extends BaseGithub {
       url: repo.url,
       description: repo.description,
       forks: repo.forks,
-      language: repo.language,
+      language: repo.language ? repo.language.toLowerCase() : "",
       stars: repo.stars,
       openIssues: repo.openIssues,
     };

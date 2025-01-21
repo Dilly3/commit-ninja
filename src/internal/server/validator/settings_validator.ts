@@ -1,5 +1,5 @@
 import { body, ValidationChain } from "express-validator";
-import { CronInterval } from "../../../internal/cron/cron";
+import { CronInterval } from "../../../cron/cron";
 
 export function setSettingsValidator(): ValidationChain[] {
   const validatorchain = [

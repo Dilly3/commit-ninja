@@ -42,7 +42,7 @@ class GithubRepo extends base_github_1.BaseGithub {
             url: repo.url,
             description: repo.description,
             forks: repo.forks,
-            language: repo.language,
+            language: repo.language ? repo.language.toLowerCase() : "",
             stars: repo.stars,
             openIssues: repo.openIssues,
         };

@@ -1,3 +1,4 @@
+import { plainToInstance } from "class-transformer";
 import { AppSettings } from "../redis/redis";
 import { RepoRepository } from "../repository/repo";
 import { Config, getConfigInstance } from "../config/config";
@@ -6,7 +7,7 @@ import { MaxStars, RepoInfo } from "../db/entities/repo_entity";
 import Redis from "ioredis";
 import { RepoResponse } from "../../github/models";
 
-let repoController: RepoController;
+let repoController: RepoController | null = null;
 export class RepoController {
   public constructor(
     public appSetting: AppSettings,
@@ -17,6 +18,11 @@ export class RepoController {
 
   async getRepoByName(name: string) {
     return await this.repoRepository.getRepoByName(name);
+  }
+
+  async getRepoByLanguage(language: string) {
+      const repos = await this.repoRepository.getRepoByLanguage(language);
+      return plainToInstance(RepoInfo, repos);
   }
 
   async getReposWithMostStars(limit: number = 1): Promise<Array<MaxStars>> {
@@ -62,7 +68,7 @@ export class RepoController {
   }
 }
 
-export function initRepoController(
+function initRepoController(
   redisClient: Redis,
   config: Config,
 ): RepoController {
@@ -75,5 +81,18 @@ export function initRepoController(
     config.githubToken,
   );
   repoController = new RepoController(appSetting, repoRepository, repoClient);
+  return repoController;
+}
+
+export function getRepoControllerInstance(
+  redisClient?: Redis,
+  config?: Config,
+): RepoController {
+  if (!repoController) {
+    if (!redisClient || !config) {
+      throw new Error("Redis client and config must be provided");
+    }
+    return initRepoController(redisClient!, config!);
+  }
   return repoController;
 }

@@ -1,4 +1,4 @@
-import { getConfigInstance } from "../config/config";
+import { getConfigInstance } from "../internal/config/config";
 
 const nodeCron = require("node-cron");
 

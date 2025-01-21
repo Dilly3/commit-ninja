@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const pg_database_1 = require("./internal/repository/pg_database");
-const cron_1 = require("./internal/cron/cron");
+const cron_1 = require("./cron/cron");
 const commit_1 = require("./internal/controller/commit");
 const redis_1 = require("./internal/redis/redis");
 const app_1 = require("./internal/server/app");
@@ -9,7 +9,7 @@ const config_1 = require("./internal/config/config");
 const repo_1 = require("./internal/controller/repo");
 const config = (0, config_1.initConfig)();
 const appDataSource = (0, pg_database_1.initDataSource)(config);
-const redisClient = (0, redis_1.initRedis)();
+const redisClient = (0, redis_1.getRedisInstance)();
 redisClient.on("ready", () => {
     appDataSource
         .initialize()
@@ -21,7 +21,7 @@ redisClient.on("ready", () => {
     });
 });
 const commitCtrl = (0, commit_1.initCommitController)(redisClient, config);
-const repoCtrl = (0, repo_1.initRepoController)(redisClient, config);
+const repoCtrl = (0, repo_1.getRepoControllerInstance)(redisClient, config);
 const app = (0, app_1.initExpressApp)();
 // Start cron job with proper binding
 commitCtrl.appSetting.getAppSettings(config).then((setting) => {

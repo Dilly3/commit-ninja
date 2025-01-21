@@ -13,10 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppSettings = void 0;
-exports.initRedis = initRedis;
+exports.getRedisInstance = getRedisInstance;
 const ioredis_1 = __importDefault(require("ioredis"));
 const config_1 = require("../config/config");
 const app_error_1 = require("../error/app_error");
+let defaultRedisClient = null;
 class AppSettings {
     constructor(redisInstance) {
         this.redisInstance = redisInstance;
@@ -42,7 +43,7 @@ class AppSettings {
             }
         });
     }
-    appSettings(config) {
+    loadappSettings(config) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const [owner, repo, startDate, cronDelay] = yield Promise.all([
@@ -65,7 +66,7 @@ class AppSettings {
     }
     getAppSettings(config) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.appSettings(config);
+            return yield this.loadappSettings(config);
         });
     }
 }
@@ -88,6 +89,13 @@ function initRedis() {
     });
     redisClient.on("connect", () => {
         console.log("Redis Client Connected");
+        defaultRedisClient = redisClient;
     });
     return redisClient;
+}
+function getRedisInstance() {
+    if (!defaultRedisClient) {
+        defaultRedisClient = initRedis();
+    }
+    return defaultRedisClient;
 }

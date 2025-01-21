@@ -1,15 +1,15 @@
 import { initDataSource } from "./internal/repository/pg_database";
-import { convertIntervalToSchedule, ScheduleJob } from "./internal/cron/cron";
+import { convertIntervalToSchedule, ScheduleJob } from "./cron/cron";
 import { initCommitController } from "./internal/controller/commit";
-import { initRedis } from "./internal/redis/redis";
+import { getRedisInstance } from "./internal/redis/redis";
 import { initExpressApp } from "./internal/server/app";
 import { initConfig } from "./internal/config/config";
-import { initRepoController } from "./internal/controller/repo";
+import { getRepoControllerInstance } from "./internal/controller/repo";
 
 const config = initConfig();
 const appDataSource = initDataSource(config);
 
-const redisClient = initRedis();
+const redisClient = getRedisInstance();
 
 redisClient.on("ready", () => {
   appDataSource
@@ -23,7 +23,7 @@ redisClient.on("ready", () => {
 });
 
 const commitCtrl = initCommitController(redisClient, config);
-const repoCtrl = initRepoController(redisClient, config);
+const repoCtrl = getRepoControllerInstance(redisClient, config);
 
 const app = initExpressApp();
 
