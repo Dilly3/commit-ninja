@@ -1,6 +1,8 @@
 import Redis from "ioredis";
 import { Config, getConfigInstance } from "../config/config";
 import { ApiError } from "../error/app_error";
+
+let defaultRedisClient: Redis | null = null;
 export interface Setting {
   Repo: string;
   Owner: string;
@@ -39,7 +41,7 @@ export class AppSettings {
     }
   }
 
-  private async appSettings(config: Config): Promise<Setting> {
+  private async loadappSettings(config: Config): Promise<Setting> {
     try {
       const [owner, repo, startDate, cronDelay] = await Promise.all([
         this.redisInstance.get("owner"),
@@ -60,11 +62,11 @@ export class AppSettings {
   }
 
   async getAppSettings(config: Config): Promise<Setting> {
-    return await this.appSettings(config);
+    return await this.loadappSettings(config);
   }
 }
 
-export function initRedis(): Redis {
+function initRedis(): Redis {
   const config = getConfigInstance();
   const redisClient = new Redis({
     host: config.redisHost,
@@ -84,7 +86,16 @@ export function initRedis(): Redis {
 
   redisClient.on("connect", () => {
     console.log("Redis Client Connected");
+    defaultRedisClient = redisClient;
   });
 
   return redisClient;
+}
+
+export function getRedisInstance(): Redis {
+  if (!defaultRedisClient) {
+    defaultRedisClient = initRedis();
+  }
+
+  return defaultRedisClient;
 }
