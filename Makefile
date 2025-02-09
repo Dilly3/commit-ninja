@@ -1,5 +1,5 @@
 
-up: install compile
+up: install
 	@docker compose up --build
 
 install:
@@ -7,4 +7,5 @@ install:
 
 compile:
 	@tsc
+
 PHONY: build run compile install
