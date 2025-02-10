@@ -101,6 +101,7 @@ export class CommitRepository {
       .createQueryBuilder("commit")
       .select("commit.author_email", "author_email")
       .addSelect("commit.author_name", "author_name")
+      .addSelect("commit.repo_name", "repo_name")
       .addSelect("COUNT(*)", "commit_count");
 
     if (startDate) {
@@ -115,6 +116,7 @@ export class CommitRepository {
     return await query
       .groupBy("commit.author_email")
       .addGroupBy("commit.author_name")
+      .addGroupBy("commit.repo_name")
       .orderBy("commit_count", "DESC")
       .getRawMany();
   }

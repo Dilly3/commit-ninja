@@ -6,7 +6,7 @@ import { initExpressApp } from "./internal/server/app";
 import { initConfig } from "./internal/config/config";
 import { getRepoControllerInstance } from "./internal/controller/repo";
 
-const config = initConfig();
+const config = initConfig(".env");
 const appDataSource = initDataSource(config);
 
 const redisClient = getRedisInstance();

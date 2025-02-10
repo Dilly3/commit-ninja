@@ -1,8 +1,9 @@
 import { validationResult } from "express-validator";
 import { getConfigInstance } from "../../config/config";
 import { getCommitControllerInstance } from "../../controller/commit";
-import { jsonResponse } from "../response";
+import { jsonResponse, New } from "../response";
 import { Request, Response } from "express";
+import { ApiError } from "../../error/app_error";
 
 interface setSettings {
   repo?: string;
@@ -16,10 +17,15 @@ export async function setSettingsHandler(
 ) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    jsonResponse(res, 400, {
-      message: "Validation failed",
-      errors: errors.array(),
-    });
+    jsonResponse(
+      res,
+      New(
+        "validation failed",
+        new ApiError(errors.array().join("\n")),
+        400,
+        null,
+      ),
+    );
     return;
   }
   const commitCtrl = getCommitControllerInstance();
@@ -32,8 +38,11 @@ export async function setSettingsHandler(
   );
 
   if (ok) {
-    jsonResponse(res, 200, { message: "settings set" });
+    jsonResponse(res, New("settings set", null, 200, null));
     return;
   }
-  jsonResponse(res, 500, { message: "setting failed" });
+  jsonResponse(
+    res,
+    New("setting failed", new ApiError("failed to set setting"), 500, null),
+  );
 }
