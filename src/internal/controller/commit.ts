@@ -4,7 +4,7 @@ import { Config, getConfigInstance } from "../config/config";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { AppSettings } from "../redis/redis";
 import { CommitResponse } from "../../github/models";
-import { CommitRepository } from "../repository/commit";
+import { ICommitRepository } from "../repository/commit";
 import { plainToInstance } from "class-transformer";
 
 enum constants {
@@ -15,7 +15,7 @@ let commitController: CommitController;
 export class CommitController {
   constructor(
     public appSetting: AppSettings,
-    public commitRepo: CommitRepository,
+    public commitRepo: ICommitRepository,
     public commitClient: GithubCommit,
     public config = getConfigInstance(),
     private readonly BATCH_SIZE: number = (config.githubPageSize ??
@@ -30,12 +30,6 @@ export class CommitController {
     return await this.commitRepo.getCommits(limit);
   }
 
-  async getCommitsByAuthour(
-    authorName: string,
-    limit?: number,
-  ): Promise<CommitInfo[]> {
-    return await this.commitRepo.getCommitsByAuthor(authorName, limit);
-  }
   async getAuthoursCommitCount(startDate?: string, endDate?: string) {
     return this.commitRepo.getCommitCountsByAuthor(startDate, endDate);
   }
@@ -149,14 +143,18 @@ export class CommitController {
 }
 
 export function getCommitControllerInstance(): CommitController {
+  if (!commitController) {
+    throw new Error("CommitController not initialized");
+  }
   return commitController;
 }
 
 export function initCommitController(
   redisClient: Redis,
   config: Config,
+  commitDB: ICommitRepository,
 ): CommitController {
-  const commitRepo = new CommitRepository();
+  const commitRepo = commitDB;
   const appSetting = new AppSettings(redisClient);
   const commitClient = new GithubCommit(
     config.githubBaseUrl,

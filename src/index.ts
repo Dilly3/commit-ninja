@@ -4,30 +4,23 @@ import { initCommitController } from "./internal/controller/commit";
 import { getRedisInstance } from "./internal/redis/redis";
 import { initExpressApp } from "./internal/server/app";
 import { initConfig } from "./internal/config/config";
-import { getRepoControllerInstance } from "./internal/controller/repo";
+import { initRepoController } from "./internal/controller/repo";
+import { initCommitRepository } from "./internal/repository/commit";
+import { initRepoRepository } from "./internal/repository/repo";
 
 const config = initConfig(".env");
-const appDataSource = initDataSource(config);
+initDataSource(config);
 
 const redisClient = getRedisInstance();
 
-redisClient.on("ready", () => {
-  appDataSource
-    .initialize()
-    .then(() => {
-      console.log("Connected to DB");
-    })
-    .catch((err: Error) => {
-      console.error("Error connecting to DB:", err);
-    });
-});
+const commitDB = initCommitRepository();
+const repoDB = initRepoRepository();
+const commitCtrl = initCommitController(redisClient, config, commitDB);
+const repoCtrl = initRepoController(redisClient, config, repoDB);
 
-const commitCtrl = initCommitController(redisClient, config);
-const repoCtrl = getRepoControllerInstance(redisClient, config);
+const app = initExpressApp(commitDB, repoDB, commitCtrl, config);
 
-const app = initExpressApp();
-
-// Start cron job with proper binding
+// Start cron job with proper binding to fetch and save commits and repo
 commitCtrl.appSetting.getAppSettings(config).then((setting) => {
   ScheduleJob(
     [() => commitCtrl.fetchAndSaveCommits(), () => repoCtrl.fetchAndSaveRepo()],

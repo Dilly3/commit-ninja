@@ -4,6 +4,17 @@ import { CommitSumm } from "../db/entities/commit_summ";
 import { BuildPaginator, Order } from "../paginator/paginator";
 import chalk from "chalk";
 
+export interface ICommitRepository {
+  saveCommits(commitInfos: CommitInfo[]): Promise<CommitInfo[]>;
+  getCommits(limit?: number): Promise<any>;
+  getCommitCountsByAuthor(
+    startDate?: string,
+    endDate?: string,
+  ): Promise<Array<CommitSumm>>;
+  getDateOfLastCommit(repoName?: string): Promise<string | null>;
+}
+
+let commitRepository: CommitRepository;
 export class CommitRepository {
   public constructor(
     public commitReposit = getAppDataSourceInstance().getRepository(CommitInfo),
@@ -97,28 +108,33 @@ export class CommitRepository {
     startDate?: string,
     endDate?: string,
   ): Promise<Array<CommitSumm>> {
-    const query = this.commitReposit
-      .createQueryBuilder("commit")
-      .select("commit.author_email", "author_email")
-      .addSelect("commit.author_name", "author_name")
-      .addSelect("commit.repo_name", "repo_name")
-      .addSelect("COUNT(*)", "commit_count");
+    try {
+      const query = this.commitReposit
+        .createQueryBuilder("commit")
+        .select("commit.author_email", "author_email")
+        .addSelect("commit.author_name", "author_name")
+        .addSelect("commit.repo_name", "repo_name")
+        .addSelect("COUNT(*)", "commit_count");
 
-    if (startDate) {
-      const sd = new Date(startDate).toISOString();
-      query.andWhere("commit.date >= :startDate", { sd });
-    }
-    if (endDate) {
-      const ed = new Date(endDate).toISOString();
-      query.andWhere("commit.date <= :endDate", { ed });
-    }
+      if (startDate) {
+        const sd = new Date(startDate).toISOString();
+        query.andWhere("commit.date >= :startDate", { sd });
+      }
+      if (endDate) {
+        const ed = new Date(endDate).toISOString();
+        query.andWhere("commit.date <= :endDate", { ed });
+      }
 
-    return await query
-      .groupBy("commit.author_email")
-      .addGroupBy("commit.author_name")
-      .addGroupBy("commit.repo_name")
-      .orderBy("commit_count", "DESC")
-      .getRawMany();
+      return await query
+        .groupBy("commit.author_email")
+        .addGroupBy("commit.author_name")
+        .addGroupBy("commit.repo_name")
+        .orderBy("commit_count", "DESC")
+        .getRawMany();
+    } catch (error) {
+      console.error("Error fetching commit counts by author:", error); // Error log
+      throw error;
+    }
   }
 
   async getDateOfLastCommit(repoName?: string): Promise<string | null> {
@@ -154,4 +170,16 @@ export class CommitRepository {
       throw error;
     }
   }
+}
+
+export function getCommitRepositoryInstance(): ICommitRepository {
+  if (!commitRepository) {
+    commitRepository = new CommitRepository();
+  }
+  return commitRepository;
+}
+
+export function initCommitRepository(): ICommitRepository {
+  commitRepository = new CommitRepository();
+  return commitRepository;
 }

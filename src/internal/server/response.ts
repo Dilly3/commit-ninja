@@ -1,11 +1,21 @@
 import { Response } from "express";
 
-interface apiResponse {
+export interface apiResponse {
   message: string;
   data: any;
   error: Error | null;
   status: number;
 }
+
+export const ErrInternalServer = new Error("Internal server error");
+export const ErrNotFound = new Error("Not found");
+export const ErrBadRequest = new Error("Bad request");
+export const ErrUnauthorized = new Error("Unauthorized");
+export const httpInternalServerError = 500;
+export const httpNotFound = 404;
+export const httpBadRequest = 400;
+export const httpUnauthorized = 401;
+export const httpOK = 200;
 
 /**
  * Sends a JSON response with the specified status code and data.

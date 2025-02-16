@@ -1,7 +1,12 @@
 import { plainToInstance } from "class-transformer";
 import { MaxStars, RepoInfo } from "./../db/entities/repo_entity";
 import { getAppDataSourceInstance } from "./pg_database";
-
+export interface IRepoRepository {
+  getRepoByLanguage(language: string): Promise<any>;
+  getReposWithMostStars(limit?: number): Promise<any>;
+  saveRepo(repoInfo: RepoInfo): Promise<any>;
+}
+let repoRepository: RepoRepository;
 export class RepoRepository {
   constructor(
     public RepoReposit = getAppDataSourceInstance().getRepository(RepoInfo),
@@ -53,4 +58,17 @@ export class RepoRepository {
       stars: repo.stars,
     }));
   }
+}
+
+export function initRepoRepository(): IRepoRepository {
+  repoRepository = new RepoRepository();
+  return repoRepository;
+}
+
+export function getRepoRepositoryInstance(): IRepoRepository {
+  if (!repoRepository) {
+    repoRepository = new RepoRepository();
+  }
+
+  return repoRepository;
 }
