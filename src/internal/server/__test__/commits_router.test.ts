@@ -42,7 +42,6 @@ describe("GET /count", () => {
     const resBody: apiResponse = {
       message: "successful",
       data: commitSumArr,
-      error: null,
       status: httpOK,
     };
     const res = await request(app).get("/commits/count").send();

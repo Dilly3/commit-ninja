@@ -12,7 +12,6 @@ interface maxStars {
 interface apiResponse {
   message: string;
   data: any;
-  error: Error | null;
   status: number;
 }
 
@@ -70,7 +69,6 @@ describe("GET /repos/stars", () => {
     const resBody: apiResponse = {
       message: "successful",
       data: MaxStarsArr,
-      error: null,
       status: httpOK,
     };
     const res = await request(app).get("/repos/stars/1").send();
