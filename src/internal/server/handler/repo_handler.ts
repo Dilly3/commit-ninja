@@ -1,57 +1,85 @@
 import { convertToRepoDto } from "../../dtos/repo_dto";
-import { getRepoControllerInstance } from "../../controller/repo";
 import { Request, Response } from "express";
-import { jsonResponse, New } from "../response";
+import {
+  ErrInternalServer,
+  httpInternalServerError,
+  httpOK,
+  jsonResponse,
+  New,
+} from "../response";
 import { ApiError } from "../../error/app_error";
+import { IRepoRepository } from "../../repository/repo";
+import { RepoInfo } from "../../db/entities/repo_entity";
 
 interface RepoParams {
   language: string;
   limit: string;
 }
 
-export async function getRepoByLanguageHandler(
-  req: Request<RepoParams>,
-  res: Response,
-) {
-  try {
-    const language = req.params.language.toLowerCase().trim();
-    const repoCtrl = getRepoControllerInstance();
-    const repo = await repoCtrl.getRepoByLanguage(language);
+export function getRepoByLanguageHandler(db: IRepoRepository): any {
+  return async function (req: Request<RepoParams>, res: Response) {
+    try {
+      const language = req.params.language.toLowerCase().trim();
 
-    const dto = repo.map((r) => convertToRepoDto(r));
-    jsonResponse(res, New("successfull", null, 200, dto));
-  } catch (error) {
-    if (error instanceof Error) {
+      const repo = await db.getRepoByLanguage(language);
+
+      const dto = repo.map((r: RepoInfo) => convertToRepoDto(r));
+      jsonResponse(res, New("successful", null, httpOK, dto));
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        jsonResponse(
+          res,
+          New(
+            "failed to get repo",
+            new ApiError(error.message),
+            httpInternalServerError,
+            null,
+          ),
+        );
+        return;
+      }
       jsonResponse(
         res,
-        New("failed to get repo", new ApiError(error.message), 500, null),
+        New(
+          "failed to get repo",
+          ErrInternalServer,
+          httpInternalServerError,
+          null,
+        ),
       );
     }
-    jsonResponse(
-      res,
-      New(
-        "failed to get repo",
-        new ApiError("internal server error"),
-        500,
-        null,
-      ),
-    );
-  }
+  };
 }
 
-export async function getRepoWithMostStarsHandler(
-  req: Request<RepoParams>,
-  res: Response,
-) {
-  try {
-    const repoCtrl = getRepoControllerInstance();
-    const limit = req.params.limit ? parseInt(req.params.limit) : 1;
-    const maxStars = await repoCtrl.getReposWithMostStars(limit);
-    res.status(200).json(maxStars);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
+export function getRepoWithMostStarsHandler(db: IRepoRepository): any {
+  return async function (req: Request<RepoParams>, res: Response) {
+    try {
+      const limit = req.params.limit ? parseInt(req.params.limit) : 1;
+      const maxStars = await db.getReposWithMostStars(limit);
+      jsonResponse(res, New("successful", null, 200, maxStars));
+    } catch (error) {
+      if (error instanceof Error) {
+        jsonResponse(
+          res,
+          New(
+            "failed to get repo",
+            new ApiError(error.message),
+            httpInternalServerError,
+            null,
+          ),
+        );
+        return;
+      }
+      jsonResponse(
+        res,
+        New(
+          "failed to get repo",
+          ErrInternalServer,
+          httpInternalServerError,
+          null,
+        ),
+      );
     }
-    res.status(500).json({ message: "Internal server error" });
-  }
+  };
 }
