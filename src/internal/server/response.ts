@@ -3,7 +3,12 @@ import { Response } from "express";
 export interface apiResponse {
   message: string;
   data: any;
-  error: Error | null;
+  status: number;
+}
+
+export interface apiError {
+  message: string;
+  error: any;
   status: number;
 }
 
@@ -17,19 +22,39 @@ export const httpBadRequest = 400;
 export const httpUnauthorized = 401;
 export const httpOK = 200;
 
-/**
- * Sends a JSON response with the specified status code and data.
- *
- * @param res - Express Response object to send the response
- * @param data - ApiResponse object containing the message, data, error, and status
- *
- * @example
- * jsonResponse(res, New("Success", null, 200, { items: [] }));
- */
-export const jsonResponse = (res: Response, data: apiResponse) => {
+const jsonError = (res: Response, data: apiError) => {
   res.status(data.status).json(data);
 };
 
+// send a 200 OK response to the client
+export const OK = (res: Response, data: any) => {
+  const response = New("successful", httpOK, data);
+  res.status(response.status).json(response);
+};
+// send a 500 internal server error response to the client
+export const InternalServerError = (res: Response, msg: string) => {
+  jsonError(res, {
+    message: msg,
+    error: "internal server error",
+    status: httpInternalServerError,
+  });
+};
+// send a 400 bad request response to the client
+export const BadRequest = (res: Response, msg: string) => {
+  jsonError(res, {
+    message: msg,
+    error: "bad request",
+    status: httpBadRequest,
+  });
+};
+// send a 404 not found response to the client
+export const NotFound = (res: Response, msg: string) => {
+  jsonError(res, {
+    message: msg,
+    error: "not found",
+    status: httpNotFound,
+  });
+};
 /**
  * Creates a new API response object.
  *
@@ -42,16 +67,10 @@ export const jsonResponse = (res: Response, data: apiResponse) => {
  * @example
  * const response = New("User created successfully", null, 201, { userId: "123" });
  */
-export function New(
-  message: string,
-  error: Error | null,
-  status: number,
-  data: any,
-): apiResponse {
+export function New(message: string, status: number, data: any): apiResponse {
   return {
     message,
     data,
-    error,
     status,
   };
 }

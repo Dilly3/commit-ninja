@@ -1,13 +1,6 @@
 import { convertToRepoDto } from "../../dtos/repo_dto";
 import { Request, Response } from "express";
-import {
-  ErrInternalServer,
-  httpInternalServerError,
-  httpOK,
-  jsonResponse,
-  New,
-} from "../response";
-import { ApiError } from "../../error/app_error";
+import { ErrInternalServer, InternalServerError, OK } from "../response";
 import { IRepoRepository } from "../../repository/repo";
 import { RepoInfo } from "../../db/entities/repo_entity";
 
@@ -24,30 +17,15 @@ export function getRepoByLanguageHandler(db: IRepoRepository): any {
       const repo = await db.getRepoByLanguage(language);
 
       const dto = repo.map((r: RepoInfo) => convertToRepoDto(r));
-      jsonResponse(res, New("successful", null, httpOK, dto));
+      OK(res, dto);
       return;
     } catch (error) {
       if (error instanceof Error) {
-        jsonResponse(
-          res,
-          New(
-            "failed to get repo",
-            new ApiError(error.message),
-            httpInternalServerError,
-            null,
-          ),
-        );
+        InternalServerError(res, error.message);
         return;
       }
-      jsonResponse(
-        res,
-        New(
-          "failed to get repo",
-          ErrInternalServer,
-          httpInternalServerError,
-          null,
-        ),
-      );
+      InternalServerError(res, ErrInternalServer.message);
+      return;
     }
   };
 }
@@ -57,29 +35,14 @@ export function getRepoWithMostStarsHandler(db: IRepoRepository): any {
     try {
       const limit = req.params.limit ? parseInt(req.params.limit) : 1;
       const maxStars = await db.getReposWithMostStars(limit);
-      jsonResponse(res, New("successful", null, 200, maxStars));
+      OK(res, maxStars);
     } catch (error) {
       if (error instanceof Error) {
-        jsonResponse(
-          res,
-          New(
-            "failed to get repo",
-            new ApiError(error.message),
-            httpInternalServerError,
-            null,
-          ),
-        );
+        InternalServerError(res, error.message);
         return;
       }
-      jsonResponse(
-        res,
-        New(
-          "failed to get repo",
-          ErrInternalServer,
-          httpInternalServerError,
-          null,
-        ),
-      );
+      InternalServerError(res, ErrInternalServer.message);
+      return;
     }
   };
 }

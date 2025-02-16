@@ -1,6 +1,24 @@
 import { body, ValidationChain } from "express-validator";
 import { CronInterval } from "../../../cron/cron";
+export interface validationError {
+  location: string;
+  msg: string;
+  path: string;
+  value: string;
+  type: string;
+}
 
+export function getValidationError(errors: any[]): validationError[] {
+  return errors.map((e: any) => {
+    return {
+      location: e.location,
+      msg: e.msg,
+      path: e.path,
+      value: e.value,
+      type: e.type,
+    };
+  });
+}
 export function setSettingsValidator(): ValidationChain[] {
   const validatorchain = [
     body("repo")
