@@ -43,7 +43,8 @@ export class Config {
   ) {}
 }
 
-export function initConfig(): Config {
+export function initConfig(envPath: string): Config {
+    dotenv.config({ path: envPath });
   config = new Config();
   return config;
 }

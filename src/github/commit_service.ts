@@ -1,5 +1,4 @@
-import { plainToInstance } from "class-transformer";
-import { CommitInfo, CommitResponse } from "./models";
+import { CommitResponse } from "./models";
 import { GitHubApiError } from "./github_error";
 import { BaseGithub } from "./base_github";
 
@@ -13,6 +12,10 @@ export class GithubCommit extends BaseGithub {
     private pageSize: number,
   ) {
     super(baseUrl, owner, repo, token);
+  }
+
+  getRepoName(): string {
+    return this.repo;
   }
 
   async getCommits(
@@ -46,18 +49,18 @@ export class GithubCommit extends BaseGithub {
    * @param repoName - Optional repository name override. If not provided, uses the instance's repo name
    * @returns {CommitInfo} A normalized commit information object containing essential commit details
    */
-  getCommitInstance(repoCommit: CommitResponse, repoName?: string): CommitInfo {
-    const commit = plainToInstance(CommitResponse, repoCommit);
-    return {
-      id: commit.sha,
-      repoName: repoName || this.repo,
-      message: commit.commit.message,
-      authorName: commit.committer.login,
-      authorEmail: commit.commit.author.email,
-      date: commit.commit.author.date,
-      url: commit.commit.url.split("/git/")[0],
-    };
-  }
+  // getCommitInstance(repoCommit: CommitResponse, repoName?: string): CommitInfo {
+  //   const commit = plainToInstance(CommitResponse, repoCommit);
+  //   return {
+  //     id: commit.sha,
+  //     repoName: repoName || this.repo,
+  //     message: commit.commit.message,
+  //     authorName: commit.committer.login,
+  //     authorEmail: commit.commit.author.email,
+  //     date: commit.commit.author.date,
+  //     url: commit.commit.url.split("/git/")[0],
+  //   };
+  // }
 
   private parseCommitUrl(
     since: string,

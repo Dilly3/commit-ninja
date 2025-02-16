@@ -3,16 +3,19 @@ import { GithubCommit } from "../../github/commit_service";
 import { Config, getConfigInstance } from "../config/config";
 import { CommitInfo } from "../db/entities/commit_entity";
 import { AppSettings } from "../redis/redis";
-import { CommitRepository } from "../repository/commit";
+import { CommitResponse } from "../../github/models";
+import { ICommitRepository } from "../repository/commit";
+import { plainToInstance } from "class-transformer";
 
 enum constants {
   BATCHSIZE = 25,
 }
+
 let commitController: CommitController;
 export class CommitController {
   constructor(
     public appSetting: AppSettings,
-    public commitRepo: CommitRepository,
+    public commitRepo: ICommitRepository,
     public commitClient: GithubCommit,
     public config = getConfigInstance(),
     private readonly BATCH_SIZE: number = (config.githubPageSize ??
@@ -27,12 +30,6 @@ export class CommitController {
     return await this.commitRepo.getCommits(limit);
   }
 
-  async getCommitsByAuthour(
-    authorName: string,
-    limit?: number,
-  ): Promise<CommitInfo[]> {
-    return await this.commitRepo.getCommitsByAuthor(authorName, limit);
-  }
   async getAuthoursCommitCount(startDate?: string, endDate?: string) {
     return this.commitRepo.getCommitCountsByAuthor(startDate, endDate);
   }
@@ -54,15 +51,11 @@ export class CommitController {
    * @throws Error if any operation fails during the process
    */
   async fetchAndSaveCommits(): Promise<CommitInfo[]> {
-    // Track execution time for performance monitoring
     const startTime = performance.now();
 
-    // Get application settings from Redis (includes repo, owner, start date)
     const appSetting = await this.appSetting.getAppSettings(this.config);
     console.log("APP-SETTING", appSetting);
     try {
-      // Get the most recent commit date to avoid fetching duplicate commits
-      // Falls back to config.githubRepo(set in env) if appSetting.Repo(set in redis) is not available
       const lastCommitDate = await this.getLastCommitDate(
         appSetting.Repo ?? this.config.githubRepo,
       );
@@ -71,14 +64,10 @@ export class CommitController {
       let page = 1;
       let allCommits: CommitInfo[] = [];
 
-      // Set up batch processing to optimize memory usage and database operations
-
       let batchCommits: CommitInfo[] = [];
 
       // Continue fetching commits until no more are available
       while (true) {
-        // Fetch a page of commits from GitHub
-        // Uses lastCommitDate from the database or StartDate as the starting point
         const commits = await this.commitClient.getCommits(
           page,
           lastCommitDate || appSetting.StartDate || undefined,
@@ -88,15 +77,12 @@ export class CommitController {
         // Exit loop if no more commits are found
         if (!commits || commits.length === 0) break;
 
-        // Convert raw commit data to CommitInfo instances
-        // Uses Promise.all for parallel processing of commit data
         const commitInfos = await Promise.all(
           commits.map((commit) =>
-            this.commitClient.getCommitInstance(commit, appSetting.Repo),
+            this.getCommitInstance(commit, appSetting.Repo),
           ),
         );
 
-        // Add processed commits to the current batch
         batchCommits.push(...commitInfos);
 
         // When batch size is reached, save to database and reset batch
@@ -115,14 +101,12 @@ export class CommitController {
         allCommits.push(...batchCommits);
       }
 
-      // Calculate and log execution metrics
       const executionTime = (performance.now() - startTime) / 1000;
       console.log(
         `!!! Scheduled job completed: ${allCommits.length} commits processed in ${executionTime.toFixed(2)} seconds`,
       );
       return allCommits;
     } catch (error) {
-      // Error handling with type checking
       if (error instanceof Error) {
         throw new Error(error.message);
       }
@@ -143,17 +127,34 @@ export class CommitController {
       owner,
     );
   }
+
+  getCommitInstance(repoCommit: CommitResponse, repoName?: string): CommitInfo {
+    const commit = plainToInstance(CommitResponse, repoCommit);
+    return {
+      id: commit.sha,
+      repoName: repoName || this.commitClient.getRepoName(),
+      message: commit.commit.message,
+      authorName: commit.committer.login,
+      authorEmail: commit.commit.author.email,
+      date: commit.commit.author.date,
+      url: commit.commit.url.split("/git/")[0],
+    };
+  }
 }
 
 export function getCommitControllerInstance(): CommitController {
+  if (!commitController) {
+    throw new Error("CommitController not initialized");
+  }
   return commitController;
 }
 
 export function initCommitController(
   redisClient: Redis,
   config: Config,
+  commitDB: ICommitRepository,
 ): CommitController {
-  const commitRepo = new CommitRepository();
+  const commitRepo = commitDB;
   const appSetting = new AppSettings(redisClient);
   const commitClient = new GithubCommit(
     config.githubBaseUrl,

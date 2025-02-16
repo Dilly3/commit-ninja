@@ -1,28 +1,24 @@
 import { plainToInstance } from "class-transformer";
 import { AppSettings } from "../redis/redis";
-import { RepoRepository } from "../repository/repo";
+import { IRepoRepository } from "../repository/repo";
 import { Config, getConfigInstance } from "../config/config";
 import { GithubRepo } from "../../github/repo_service";
 import { MaxStars, RepoInfo } from "../db/entities/repo_entity";
 import Redis from "ioredis";
 import { RepoResponse } from "../../github/models";
 
-let repoController: RepoController | null = null;
+let repoController: RepoController;
 export class RepoController {
   public constructor(
     public appSetting: AppSettings,
-    public repoRepository: RepoRepository,
+    public repoRepository: IRepoRepository,
     public repoClient: GithubRepo,
     public config = getConfigInstance(),
   ) {}
 
-  async getRepoByName(name: string) {
-    return await this.repoRepository.getRepoByName(name);
-  }
-
   async getRepoByLanguage(language: string) {
-      const repos = await this.repoRepository.getRepoByLanguage(language);
-      return plainToInstance(RepoInfo, repos);
+    const repos = await this.repoRepository.getRepoByLanguage(language);
+    return plainToInstance(RepoInfo, repos);
   }
 
   async getReposWithMostStars(limit: number = 1): Promise<Array<MaxStars>> {
@@ -68,11 +64,12 @@ export class RepoController {
   }
 }
 
-function initRepoController(
+export function initRepoController(
   redisClient: Redis,
   config: Config,
+  repoDB: IRepoRepository,
 ): RepoController {
-  const repoRepository = new RepoRepository();
+  const repoRepository = repoDB;
   const appSetting = new AppSettings(redisClient);
   const repoClient = new GithubRepo(
     config.githubBaseUrl,
@@ -84,15 +81,9 @@ function initRepoController(
   return repoController;
 }
 
-export function getRepoControllerInstance(
-  redisClient?: Redis,
-  config?: Config,
-): RepoController {
+export function getRepoControllerInstance(): RepoController {
   if (!repoController) {
-    if (!redisClient || !config) {
-      throw new Error("Redis client and config must be provided");
-    }
-    return initRepoController(redisClient!, config!);
+    throw new Error("RepoController not initialized");
   }
   return repoController;
 }

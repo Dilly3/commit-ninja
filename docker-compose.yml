@@ -13,6 +13,7 @@ services:
     depends_on:
       - postgres
       - redis
+    restart: on-failure
   postgres:
     container_name: commit_ninja_db
     image: postgres:15.1

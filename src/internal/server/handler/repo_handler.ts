@@ -1,41 +1,48 @@
 import { convertToRepoDto } from "../../dtos/repo_dto";
-import { getRepoControllerInstance } from "../../controller/repo";
 import { Request, Response } from "express";
+import { ErrInternalServer, InternalServerError, OK } from "../response";
+import { IRepoRepository } from "../../repository/repo";
+import { RepoInfo } from "../../db/entities/repo_entity";
 
 interface RepoParams {
   language: string;
   limit: string;
 }
 
-export async function getRepoByLanguageHandler(
-  req: Request<RepoParams>,
-  res: Response,
-) {
-  try {
-    const language = req.params.language.toLowerCase().trim();
-    const repoCtrl = getRepoControllerInstance();
-    const repo = await repoCtrl.getRepoByLanguage(language);
+export function getRepoByLanguageHandler(db: IRepoRepository): any {
+  return async function (req: Request<RepoParams>, res: Response) {
+    try {
+      const language = req.params.language.toLowerCase().trim();
 
-    const dto = repo.map((r) => convertToRepoDto(r));
-    res.status(200).json(dto);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
+      const repo = await db.getRepoByLanguage(language);
+
+      const dto = repo.map((r: RepoInfo) => convertToRepoDto(r));
+      OK(res, dto);
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        InternalServerError(res, error.message);
+        return;
+      }
+      InternalServerError(res, ErrInternalServer.message);
+      return;
     }
-    res.status(500).json({ message: "Internal server error" });
-  }
+  };
 }
 
-export async function getRepoWithMostStarsHandler(req: Request<RepoParams>, res: Response) {
-  try {
-    const repoCtrl = getRepoControllerInstance();
-    const limit = req.params.limit ? parseInt(req.params.limit) : 1;
-    const maxStars = await repoCtrl.getReposWithMostStars(limit);
-    res.status(200).json(maxStars);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
+export function getRepoWithMostStarsHandler(db: IRepoRepository): any {
+  return async function (req: Request<RepoParams>, res: Response) {
+    try {
+      const limit = req.params.limit ? parseInt(req.params.limit) : 1;
+      const maxStars = await db.getReposWithMostStars(limit);
+      OK(res, maxStars);
+    } catch (error) {
+      if (error instanceof Error) {
+        InternalServerError(res, error.message);
+        return;
+      }
+      InternalServerError(res, ErrInternalServer.message);
+      return;
     }
-    res.status(500).json({ message: "Internal server error" });
-  }
+  };
 }

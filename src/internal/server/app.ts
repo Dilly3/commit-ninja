@@ -5,8 +5,18 @@ import { getSettingsRouter } from "./router/settings_router";
 import { getCommitRouter } from "./router/commits_router";
 import { loggerMiddleware } from "./logger/logger";
 import { getRepoRouter } from "./router/repo_router";
+import { Request, Response } from "express";
+import { ICommitRepository } from "../repository/commit";
+import { IRepoRepository } from "../repository/repo";
+import { Config } from "../config/config";
+import { CommitController } from "../controller/commit";
 
-export function initExpressApp(): Express {
+export function initExpressApp(
+  commitDB: ICommitRepository,
+  repoDB: IRepoRepository,
+  commitCtrl?: CommitController,
+  config?: Config,
+): Express {
   const app: Express = express();
 
   app.use(express.json());
@@ -23,9 +33,12 @@ export function initExpressApp(): Express {
 
   app.use(cors());
   app.use(loggerMiddleware);
-  app.use("/settings", getSettingsRouter());
-  app.use("/commits", getCommitRouter());
-  app.use("/repos", getRepoRouter());
+  app.use("/settings", getSettingsRouter(commitCtrl, config));
+  app.use("/commits", getCommitRouter(commitDB));
+  app.use("/repos", getRepoRouter(repoDB));
+  app.get("/ping", async (_: Request, res: Response) => {
+    res.status(200).json("pong!!");
+  });
 
   return app;
 }
