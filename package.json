@@ -18,6 +18,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
     "dev": "nodemon",
     "start": "FORCE_COLOR=1 node dist/index.js",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
