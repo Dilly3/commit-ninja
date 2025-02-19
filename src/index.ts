@@ -2,7 +2,7 @@ import { initDataSource } from "./internal/repository/pg_database";
 import { convertIntervalToSchedule, ScheduleJob } from "./cron/cron";
 import { initCommitController } from "./internal/controller/commit";
 import { getRedisInstance } from "./internal/redis/redis";
-import { initExpressApp } from "./internal/server/app";
+import { initExpressApp } from "./internal/server/router/app";
 import { initConfig } from "./internal/config/config";
 import { initRepoController } from "./internal/controller/repo";
 import { initCommitRepository } from "./internal/repository/commit";
