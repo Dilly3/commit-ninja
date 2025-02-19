@@ -14,7 +14,7 @@ export interface ICommitRepository {
   getDateOfLastCommit(repoName?: string): Promise<string | null>;
 }
 
-let commitRepository: CommitRepository;
+let commitRepository: ICommitRepository;
 export class CommitRepository {
   public constructor(
     public commitReposit = getAppDataSourceInstance().getRepository(CommitInfo),
@@ -114,7 +114,7 @@ export class CommitRepository {
         .select("commit.author_email", "author_email")
         .addSelect("commit.author_name", "author_name")
         .addSelect("commit.repo_name", "repo_name")
-        .addSelect("COUNT(*)", "commit_count");
+        .addSelect("CAST(COUNT(*) AS int)", "commit_count");
 
       if (startDate) {
         const sd = new Date(startDate).toISOString();
@@ -132,7 +132,7 @@ export class CommitRepository {
         .orderBy("commit_count", "DESC")
         .getRawMany();
     } catch (error) {
-      console.error("Error fetching commit counts by author:", error); // Error log
+      console.error("Error fetching commit counts by author:", error);
       throw error;
     }
   }

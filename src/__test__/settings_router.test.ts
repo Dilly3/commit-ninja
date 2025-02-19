@@ -1,6 +1,6 @@
-import { initExpressApp } from "../app";
+import { initExpressApp } from "../internal/server/router/app";
 import request from "supertest";
-import { httpBadRequest } from "../response";
+import { httpBadRequest } from "../internal/server/response";
 
 const app = initExpressApp(
   {

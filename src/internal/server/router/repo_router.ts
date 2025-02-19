@@ -2,7 +2,7 @@ import express from "express";
 import {
   getRepoByLanguageHandler,
   getRepoWithMostStarsHandler,
-} from "../handler/repo_handler";
+} from "../handlers/repo_handler";
 import { IRepoRepository } from "../../repository/repo";
 
 export function getRepoRouter(db: IRepoRepository) {

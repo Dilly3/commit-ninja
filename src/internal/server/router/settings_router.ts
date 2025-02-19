@@ -1,6 +1,6 @@
 import express from "express";
 
-import { setSettingsHandler } from "../handler/settings_handler";
+import { setSettingsHandler } from "../handlers/settings_handler";
 import { setSettingsValidator } from "../validator/settings_validator";
 import { CommitController } from "../../controller/commit";
 import { Config } from "../../config/config";

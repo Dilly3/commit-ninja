@@ -1,7 +1,7 @@
 import { RepoInfo } from "src/internal/db/entities/repo_entity";
-import { initExpressApp } from "../app";
+import { initExpressApp } from "../internal/server/router/app";
 import request from "supertest";
-import { httpInternalServerError, httpOK } from "../response";
+import { httpInternalServerError, httpOK } from "../internal/server/response";
 
 interface maxStars {
   name: string;

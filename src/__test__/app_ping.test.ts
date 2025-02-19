@@ -1,7 +1,7 @@
 import { describe } from "node:test";
-import { initExpressApp } from "../app";
+import { initExpressApp } from "../internal/server/router/app";
 import request from "supertest";
-import { httpOK } from "../response";
+import { httpOK } from "../internal/server/response";
 
 const app = initExpressApp(
   {

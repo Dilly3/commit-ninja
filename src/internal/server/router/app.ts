@@ -1,15 +1,15 @@
 import express, { Express } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { getSettingsRouter } from "./router/settings_router";
-import { getCommitRouter } from "./router/commits_router";
-import { loggerMiddleware } from "./logger/logger";
-import { getRepoRouter } from "./router/repo_router";
+import { getSettingsRouter } from "./settings_router";
+import { getCommitRouter } from "./commits_router";
+import { loggerMiddleware } from "../logger/logger";
+import { getRepoRouter } from "./repo_router";
 import { Request, Response } from "express";
-import { ICommitRepository } from "../repository/commit";
-import { IRepoRepository } from "../repository/repo";
-import { Config } from "../config/config";
-import { CommitController } from "../controller/commit";
+import { ICommitRepository } from "../../repository/commit";
+import { IRepoRepository } from "../../repository/repo";
+import { Config } from "../../config/config";
+import { CommitController } from "../../controller/commit";
 
 export function initExpressApp(
   commitDB: ICommitRepository,

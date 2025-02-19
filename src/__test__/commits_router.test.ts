@@ -1,6 +1,10 @@
-import { initExpressApp } from "../app";
+import { initExpressApp } from "../internal/server/router/app";
 import request from "supertest";
-import { httpInternalServerError, httpOK, apiResponse } from "../response";
+import {
+  httpInternalServerError,
+  httpOK,
+  apiResponse,
+} from "../internal/server/response";
 
 interface CommitSumm {
   author_email: string;

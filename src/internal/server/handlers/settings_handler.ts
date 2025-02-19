@@ -1,4 +1,4 @@
-import { BadRequest, InternalServerError, OK } from "./../response";
+import { BadRequest, InternalServerError, OK } from "../response";
 import { validationResult } from "express-validator";
 import { Config, getConfigInstance } from "../../config/config";
 import {

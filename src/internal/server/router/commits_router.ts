@@ -1,6 +1,6 @@
 import express from "express";
 
-import { commitCountHandler } from "../handler/commits_handler";
+import { commitCountHandler } from "../handlers/commits_handler";
 import { ICommitRepository } from "../../repository/commit";
 
 export function getCommitRouter(db: ICommitRepository) {
