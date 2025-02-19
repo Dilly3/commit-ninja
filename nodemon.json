@@ -2,5 +2,6 @@
   "watch": ["src/**/*"],
   "ext": "js,ts",
   "exec": "FORCE_COLOR=1 ts-node ./src/index.ts",
-  "ignore": ["src/**/*.spec.ts"]
+  "ignore": ["src/**/*.spec.ts"],
+  "restart": true
 }
