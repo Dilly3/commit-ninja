@@ -10,6 +10,7 @@ enum configDefaults {
   DefaultRedisPort = 6379,
   DefaultTimeZone = "Africa/Lagos",
   DefaultCronDelay = "5m",
+  DefaultNodeEnv = "development",
 }
 dotenv.config();
 let config: Config;
@@ -40,11 +41,12 @@ export class Config {
     public TZ = process.env.TZ ?? configDefaults.DefaultTimeZone,
     public cronDelay = process.env.CRON_DELAY ??
       configDefaults.DefaultCronDelay,
+    public nodeEnv = process.env.NODE_ENV ?? configDefaults.DefaultNodeEnv,
   ) {}
 }
 
 export function initConfig(envPath: string): Config {
-    dotenv.config({ path: envPath });
+  dotenv.config({ path: envPath });
   config = new Config();
   return config;
 }

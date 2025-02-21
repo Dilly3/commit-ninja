@@ -5,36 +5,35 @@ const nodeCron = require("node-cron");
 type CronFunction = () => {};
 
 export enum CronSchedule {
-  TWO_MINUTES = "*/2 * * * *",
   FIVE_MINUTES = "*/5 * * * *",
-  TEN_MINUTES = "*/10 * * * *",
   HOURLY = "0 * * * *",
   DAILY = "0 0 * * *",
 }
 
 export enum CronInterval {
-  TWO_MINUTES = "2m",
   FIVE_MINUTES = "5m",
-  TEN_MINUTES = "10m",
   HOURLY = "1h",
   DAILY = "24h",
 }
 
-export function convertIntervalToSchedule(interval: string): CronSchedule {
-  switch (interval) {
-    case CronInterval.TWO_MINUTES:
-      return CronSchedule.TWO_MINUTES;
-    case CronInterval.FIVE_MINUTES:
-      return CronSchedule.FIVE_MINUTES;
-    case CronInterval.TEN_MINUTES:
-      return CronSchedule.TEN_MINUTES;
-    case CronInterval.HOURLY:
-      return CronSchedule.HOURLY;
-    case CronInterval.DAILY:
-      return CronSchedule.DAILY;
-    default:
-      return CronSchedule.HOURLY;
+export function convertIntervalToSchedule(
+  environment: string,
+  interval: string,
+): CronSchedule {
+  if (environment === "production") {
+    switch (interval) {
+      case CronInterval.FIVE_MINUTES:
+        return CronSchedule.FIVE_MINUTES;
+      case CronInterval.HOURLY:
+        return CronSchedule.HOURLY;
+      case CronInterval.DAILY:
+        return CronSchedule.DAILY;
+      default:
+        return CronSchedule.HOURLY;
+    }
   }
+
+  return CronSchedule.FIVE_MINUTES;
 }
 
 /**
