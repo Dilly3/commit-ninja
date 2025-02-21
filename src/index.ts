@@ -24,7 +24,7 @@ const app = initExpressApp(commitDB, repoDB, commitCtrl, config);
 commitCtrl.appSetting.getAppSettings(config).then((setting) => {
   ScheduleJob(
     [() => commitCtrl.fetchAndSaveCommits(), () => repoCtrl.fetchAndSaveRepo()],
-    convertIntervalToSchedule(setting.CronDelay),
+    convertIntervalToSchedule(config.nodeEnv, setting.CronDelay),
     true,
   );
 });

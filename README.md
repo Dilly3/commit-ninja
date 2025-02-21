@@ -2,12 +2,15 @@
 
 ---
 
-Commit-Ninja is a simple REST API for monitoring and managing productivity. it retrieves information about repositories and its commits from GitHub. The commits retirieved is use to analyze activities on a repository eg. the contributor with the most commits and also commits with the most stars.
+Commit-Ninja is API(REST) for monitoring and managing productivity. it retrieves information about repositories and its commits from GitHub API. The commits retirieved is use to analyze activities on a repository, eg. the contributor with the most commits and also repositories with the most stars.
 
-The API is built with **TypeScript**, **Docker**,**Redis** and **Postgres**. The API retrieves repository and its commits from GitHub based on user settings and stores them in a Postgres database. The settings {repo owner , repo name, perPage count and since date } are not persisted with Redis. At the start of the program this settings are set in the .env file. A sample of the.env file can be found in the sample.env.
-An endpoint is exposed to update some of the settings fields.
+The API is built with **_TypeScript_**, **_Docker_**,**_Redis_** and **_Postgres_**. The API retrieves repository and its commits from GitHub based on user settings and stores them in a Postgres database. The settings {repo owner , repo name, perPage count and since date } are persisted with Redis. At the start of the program this settings are set in the .env file. A sample of the.env file can be found in the sample.env.
+An endpoint is exposed to update some of the settings fields like repoName, sinceDate(start fetching commits from this date).
 
-The API has a cron job that runs at interval to check for commits and update the data in the database.
+## Operation
+
+> A cron job runs at interval to check for and pulls commits from github api and updates the database with the data from github API.  
+> Commit-Ninja API exposes endpoints to get the information about the repositories from the database.
 
 ## Requirement
 
@@ -79,7 +82,6 @@ COMMIT-NINJA/
 	{
  "repo" :string ,
  "start_date" : string // "YYYY-MM-DD",
- "cron_delay" : string // "2m","5m","10m","1h","24h"
 	}
 ```
 
@@ -182,3 +184,9 @@ The API returns error details in JSON format:
   "status": 400
 }
 ```
+
+### Author Information
+
+- **Name**: Olisa Michael
+- **Email**: michael.anikamadu@gmail.com
+- **Date**: 2024-12-30
